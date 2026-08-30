@@ -1,0 +1,556 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>LangThang - Khám phá Du lịch & Ẩm thực Việt Nam</title>
+    
+    <!-- Google Fonts: Playfair Display & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet"/>
+    
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    
+    <!-- Tailwind CSS with Forms & Container Queries -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    
+    <!-- Tailwind Theme Config -->
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface": "#f8f9fa",
+              "on-surface": "#1e293b",
+              "on-surface-variant": "#64748b",
+              "primary-container": "#064e3b",
+              "primary-hover": "#043629",
+              "secondary-container": "#fd8a42",
+              "secondary-hover": "#e6732b",
+              "surface-variant": "#e2e8f0",
+              "outline": "#64748b"
+            },
+            fontFamily: {
+              'serif': ['"Playfair Display"', 'Georgia', 'serif'],
+              'sans': ['Inter', '-apple-system', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+    
+    <style>
+        body {
+          font-family: 'Inter', sans-serif;
+          -webkit-font-smoothing: antialiased;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .hover-lift {
+          transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+        }
+        .hover-lift:hover {
+          transform: translateY(-4px);
+        }
+    </style>
+    <script src="js/site-header.js" defer></script>
+</head>
+<body class="bg-surface text-slate-800 flex flex-col min-h-screen selection:bg-secondary-container selection:text-white">
+
+<!-- 
+  ========================================================================
+  🔴 LƯU Ý  Phần <header> và <footer> dưới đây được gắn vào file để có thể mở file xem
+  trực tiếp trên trình duyệt (Preview không cần web server).
+  
+  Khi tích hợp Backend (ASP.NET MVC, Laravel, Node.js...), VUI LÒNG TÁCH THÀNH:
+  - Header -> partials/_header_user.html
+  - Footer -> partials/_footer.html
+  - Layout -> layouts/_layout.html
+  ========================================================================
+-->
+
+<!-- Navbar dùng chung: nội dung và hành vi nằm duy nhất tại js/site-header.js -->
+<site-header active-page="home"></site-header>
+
+<!-- BẮT ĐẦU: BODY CONTENT (Phần lõi render của index.html) -->
+<div class="flex-grow">
+    
+    <!-- Hero Banner Section -->
+    <header class="relative w-full h-[55vh] md:h-[70vh] overflow-hidden mx-auto max-w-[1440px] md:mt-4 md:rounded-3xl shadow-md">
+        <img alt="Phong cảnh Việt Nam" class="w-full h-full object-cover scale-105 transform transition-transform duration-[25s] hover:scale-100" src="https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=1920&auto=format&fit=crop"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-black/10"></div>
+        <div class="absolute inset-0 flex items-center justify-center text-center px-4">
+            <h1 class="font-serif text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-white font-bold tracking-tight leading-tight max-w-5xl" style="text-shadow: 0 4px 24px rgba(0,0,0,0.6);">
+                Mỗi chuyến đi là <br/>
+                <span class="italic font-normal text-secondary-container">một điều kỳ diệu</span>
+            </h1>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-24">
+        
+        <!-- SECTION 1: KHÁM PHÁ 3 MIỀN (DIADIEM) -->
+        <section id="diadiem" class="scroll-mt-20">
+            <div class="text-center mb-14">
+                <span class="text-xs font-bold text-secondary-container uppercase tracking-widest bg-secondary-container/10 px-3.5 py-1 rounded-full inline-block mb-2.5">Điểm đến nổi bật</span>
+                <h2 class="font-serif text-3xl md:text-4xl text-primary-container font-bold mb-3">Khám phá 3 miền Việt Nam</h2>
+                <p class="text-slate-500 max-w-2xl mx-auto text-xs sm:text-sm">Từ những đỉnh núi mờ sương Tây Bắc đến vẻ trù phú của miệt vườn phương Nam, mỗi vùng miền là một trang ký ức rực rỡ.</p>
+            </div>
+            
+            <!-- MIỀN BẮC -->
+            <div class="mb-16">
+                <div class="flex justify-between items-end mb-5 border-b border-surface-variant pb-3">
+                    <div>
+                        <span class="inline-block px-2.5 py-0.5 bg-slate-100 text-primary-container text-[11px] font-semibold uppercase tracking-wider rounded mb-1">Vùng núi & Đồng bằng</span>
+                        <h3 class="font-serif text-2xl text-slate-900 font-bold">Miền Bắc</h3>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="document.getElementById('track-north').scrollBy({left: -330, behavior: 'smooth'})" class="w-9 h-9 rounded-full border border-surface-variant bg-white flex items-center justify-center text-slate-600 hover:bg-primary-container hover:text-white transition-all shadow-sm cursor-pointer" title="Lướt sang trái">
+                            <i class="fa-solid fa-arrow-left text-xs"></i>
+                        </button>
+                        <button onclick="document.getElementById('track-north').scrollBy({left: 330, behavior: 'smooth'})" class="w-9 h-9 rounded-full border border-surface-variant bg-white flex items-center justify-center text-slate-600 hover:bg-primary-container hover:text-white transition-all shadow-sm cursor-pointer" title="Lướt sang phải">
+                            <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="track-north" class="flex overflow-x-auto gap-5 pb-4 hide-scrollbar snap-x scroll-smooth">
+                    <!-- Hà Nội -->
+                    <div class="w-[280px] sm:w-[310px] h-[380px] relative rounded-2xl overflow-hidden flex-shrink-0 snap-start group shadow-sm hover:shadow-lg transition-all duration-300 hover-lift cursor-pointer">
+                        <img src="https://images.unsplash.com/photo-1599839619722-39751411ea63?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Hà Nội">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                        <div class="absolute top-3.5 left-3.5 bg-secondary-container text-white px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shadow">HOT</div>
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <h4 class="font-serif text-xl text-white font-bold mb-1">Hà Nội</h4>
+                            <p class="text-white/80 text-xs line-clamp-2">Thủ đô nghìn năm văn hiến, 36 phố phường rêu phong và ẩm thực tinh hoa nức tiếng.</p>
+                        </div>
+                    </div>
+                    <!-- Sa Pa -->
+                    <div class="w-[280px] sm:w-[310px] h-[380px] relative rounded-2xl overflow-hidden flex-shrink-0 snap-start group shadow-sm hover:shadow-lg transition-all duration-300 hover-lift cursor-pointer">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRkp3Y7LwLjNFtMKD8ozcG0l5E4YczqEsTrdHxMyTRuVw&s=10" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Sa Pa">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                        <div class="absolute top-3.5 left-3.5 bg-white/90 text-slate-800 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase">Lào Cai</div>
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <h4 class="font-serif text-xl text-white font-bold mb-1">Sa Pa</h4>
+                            <p class="text-white/80 text-xs line-clamp-2">Thị trấn trong mây, ruộng bậc thang kỳ vĩ và nóc nhà Đông Dương Fansipan.</p>
+                        </div>
+                    </div>
+                    <!-- Hạ Long -->
+                    <div class="w-[280px] sm:w-[310px] h-[380px] relative rounded-2xl overflow-hidden flex-shrink-0 snap-start group shadow-sm hover:shadow-lg transition-all duration-300 hover-lift cursor-pointer">
+                        <img src="https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Hạ Long">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                        <div class="absolute top-3.5 left-3.5 bg-white/90 text-slate-800 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase">UNESCO</div>
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <h4 class="font-serif text-xl text-white font-bold mb-1">Vịnh Hạ Long</h4>
+                            <p class="text-white/80 text-xs line-clamp-2">Kỳ quan thiên nhiên thế giới với hàng ngàn đảo đá vôi nhô lên từ làn nước ngọc bích.</p>
+                        </div>
+                    </div>
+                    <!-- Ninh Bình -->
+                    <div class="w-[280px] sm:w-[310px] h-[380px] relative rounded-2xl overflow-hidden flex-shrink-0 snap-start group shadow-sm hover:shadow-lg transition-all duration-300 hover-lift cursor-pointer">
+                        <img src="https://images.unsplash.com/photo-1547496502-affa22d38842?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Ninh Bình">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                        <div class="absolute top-3.5 left-3.5 bg-white/90 text-slate-800 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase">Tràng An</div>
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <h4 class="font-serif text-xl text-white font-bold mb-1">Ninh Bình</h4>
+                            <p class="text-white/80 text-xs line-clamp-2">Vịnh Hạ Long trên cạn, hang Múa tuyệt cảnh và non nước Tràng An hữu tình.</p>
+                        </div>
+                    </div>
+                    <!-- Hà Giang -->
+                    <div class="w-[280px] sm:w-[310px] h-[380px] relative rounded-2xl overflow-hidden flex-shrink-0 snap-start group shadow-sm hover:shadow-lg transition-all duration-300 hover-lift cursor-pointer">
+                        <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Hà Giang">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                        <div class="absolute top-3.5 left-3.5 bg-secondary-container text-white px-2.5 py-0.5 rounded text-[10px] font-bold uppercase">Mã Pí Lèng</div>
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <h4 class="font-serif text-xl text-white font-bold mb-1">Hà Giang</h4>
+                            <p class="text-white/80 text-xs line-clamp-2">Cao nguyên đá Đồng Văn hùng vĩ, dòng sông Nho Quế xanh ngắt và những cung đèo ngoạn mục.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MIỀN TRUNG -->
+            <div class="mb-16">
+                <div class="flex justify-between items-end mb-5 border-b border-surface-variant pb-3">
+                    <div>
+                        <span class="inline-block px-2.5 py-0.5 bg-slate-100 text-primary-container text-[11px] font-semibold uppercase tracking-wider rounded mb-1">Di sản & Biển ngọc</span>
+                        <h3 class="font-serif text-2xl text-slate-900 font-bold">Miền Trung</h3>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="document.getElementById('track-central').scrollBy({left: -330, behavior: 'smooth'})" class="w-9 h-9 rounded-full border border-surface-variant bg-white flex items-center justify-center text-slate-600 hover:bg-primary-container hover:text-white transition-all shadow-sm cursor-pointer" title="Lướt sang trái">
+                            <i class="fa-solid fa-arrow-left text-xs"></i>
+                        </button>
+                        <button onclick="document.getElementById('track-central').scrollBy({left: 330, behavior: 'smooth'})" class="w-9 h-9 rounded-full border border-surface-variant bg-white flex items-center justify-center text-slate-600 hover:bg-primary-container hover:text-white transition-all shadow-sm cursor-pointer" title="Lướt sang phải">
+                            <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="track-central" class="flex overflow-x-auto gap-5 pb-4 hide-scrollbar snap-x scroll-smooth">
+                    <!-- Hội An -->
+                    <div class="w-[280px] sm:w-[310px] h-[380px] relative rounded-2xl overflow-hidden flex-shrink-0 snap-start group shadow-sm hover:shadow-lg transition-all duration-300 hover-lift cursor-pointer">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUB2rIY7UWaN0tmW-3GzBOt_Kw-jd6Br89Q_o0QDT-7w&s=10" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Hội An">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                        <div class="absolute top-3.5 left-3.5 bg-secondary-container text-white px-2.5 py-0.5 rounded text-[10px] font-bold uppercase shadow">HOT</div>
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <h4 class="font-serif text-xl text-white font-bold mb-1">Hội An</h4>
+                            <p class="text-white/80 text-xs line-clamp-2">Phố cổ lung linh hoa đăng, những mảng tường vàng hoài niệm và cà phê bên sông Hoài.</p>
+                        </div>
+                    </div>
+                    <!-- Đà Nẵng -->
+                    <div class="w-[280px] sm:w-[310px] h-[380px] relative rounded-2xl overflow-hidden flex-shrink-0 snap-start group shadow-sm hover:shadow-lg transition-all duration-300 hover-lift cursor-pointer">
+                        <img src="https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Đà Nẵng">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                        <div class="absolute top-3.5 left-3.5 bg-white/90 text-slate-800 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase">Biển Mỹ Khê</div>
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <h4 class="font-serif text-xl text-white font-bold mb-1">Đà Nẵng</h4>
+                            <p class="text-white/80 text-xs line-clamp-2">Thành phố đáng sống, bãi biển quyến rũ hàng đầu hành tinh và Cầu Vàng nổi tiếng.</p>
+                        </div>
+                    </div>
+                    <!-- Đà Lạt -->
+                    <div class="w-[280px] sm:w-[310px] h-[380px] relative rounded-2xl overflow-hidden flex-shrink-0 snap-start group shadow-sm hover:shadow-lg transition-all duration-300 hover-lift cursor-pointer">
+                        <img src="https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Đà Lạt">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                        <div class="absolute top-3.5 left-3.5 bg-secondary-container text-white px-2.5 py-0.5 rounded text-[10px] font-bold uppercase shadow">HOT</div>
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <h4 class="font-serif text-xl text-white font-bold mb-1">Đà Lạt</h4>
+                            <p class="text-white/80 text-xs line-clamp-2">Thành phố ngàn hoa, không khí mát lành, rừng thông bạt ngàn và những quán cafe thơ mộng.</p>
+                        </div>
+                    </div>
+                    <!-- Huế -->
+                    <div class="w-[280px] sm:w-[310px] h-[380px] relative rounded-2xl overflow-hidden flex-shrink-0 snap-start group shadow-sm hover:shadow-lg transition-all duration-300 hover-lift cursor-pointer">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxxBTlEyLu6OREWqFcCyF4ICsJeSzczkNlkD82Iuq9WA&s=10" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Huế">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                        <div class="absolute top-3.5 left-3.5 bg-white/90 text-slate-800 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase">Cố đô</div>
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <h4 class="font-serif text-xl text-white font-bold mb-1">Huế</h4>
+                            <p class="text-white/80 text-xs line-clamp-2">Kinh thành cổ kính, sông Hương êm đềm cùng ẩm thực cung đình truyền thống đặc sắc.</p>
+                        </div>
+                    </div>
+                    <!-- Nha Trang -->
+                    <div class="w-[280px] sm:w-[310px] h-[380px] relative rounded-2xl overflow-hidden flex-shrink-0 snap-start group shadow-sm hover:shadow-lg transition-all duration-300 hover-lift cursor-pointer">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2o5KJxu4DePG663Iu9e3Ih5mKhaBiipWtpsGg5M8yAQ&s=10" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Nha Trang">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                        <div class="absolute top-3.5 left-3.5 bg-white/90 text-slate-800 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase">Vịnh Biển</div>
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <h4 class="font-serif text-xl text-white font-bold mb-1">Nha Trang</h4>
+                            <p class="text-white/80 text-xs line-clamp-2">Thành phố biển sôi động, bãi cát trắng mịn màng và những tour đảo san hô kỳ thú.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MIỀN NAM -->
+            <div>
+                <div class="flex justify-between items-end mb-5 border-b border-surface-variant pb-3">
+                    <div>
+                        <span class="inline-block px-2.5 py-0.5 bg-slate-100 text-primary-container text-[11px] font-semibold uppercase tracking-wider rounded mb-1">Đô thị & Sông nước</span>
+                        <h3 class="font-serif text-2xl text-slate-900 font-bold">Miền Nam</h3>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="document.getElementById('track-south').scrollBy({left: -330, behavior: 'smooth'})" class="w-9 h-9 rounded-full border border-surface-variant bg-white flex items-center justify-center text-slate-600 hover:bg-primary-container hover:text-white transition-all shadow-sm cursor-pointer" title="Lướt sang trái">
+                            <i class="fa-solid fa-arrow-left text-xs"></i>
+                        </button>
+                        <button onclick="document.getElementById('track-south').scrollBy({left: 330, behavior: 'smooth'})" class="w-9 h-9 rounded-full border border-surface-variant bg-white flex items-center justify-center text-slate-600 hover:bg-primary-container hover:text-white transition-all shadow-sm cursor-pointer" title="Lướt sang phải">
+                            <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="track-south" class="flex overflow-x-auto gap-5 pb-4 hide-scrollbar snap-x scroll-smooth">
+                    <!-- TP. Hồ Chí Minh -->
+                    <div class="w-[280px] sm:w-[310px] h-[380px] relative rounded-2xl overflow-hidden flex-shrink-0 snap-start group shadow-sm hover:shadow-lg transition-all duration-300 hover-lift cursor-pointer">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTlims1VsFxql1-boxTgl6VyEpAk2FYLUBZfXpk58WfQA&s=10" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="TP. Hồ Chí Minh">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                        <div class="absolute top-3.5 left-3.5 bg-secondary-container text-white px-2.5 py-0.5 rounded text-[10px] font-bold uppercase shadow">HOT</div>
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <h4 class="font-serif text-xl text-white font-bold mb-1">TP. Hồ Chí Minh</h4>
+                            <p class="text-white/80 text-xs line-clamp-2">Thành phố không ngủ, nhịp sống hiện đại giao thoa cùng văn hóa ẩm thực đường phố độc đáo.</p>
+                        </div>
+                    </div>
+                    <!-- Vũng Tàu -->
+                    <div class="w-[280px] sm:w-[310px] h-[380px] relative rounded-2xl overflow-hidden flex-shrink-0 snap-start group shadow-sm hover:shadow-lg transition-all duration-300 hover-lift cursor-pointer">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8SjwCjBbc-ipv5_KpvfLEqWigAVwD_KWNdz2dXotmqA&s=10" alt="Vũng Tàu">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                        <div class="absolute top-3.5 left-3.5 bg-white/90 text-slate-800 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase">Bà Rịa</div>
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <h4 class="font-serif text-xl text-white font-bold mb-1">Vũng Tàu</h4>
+                            <p class="text-white/80 text-xs line-clamp-2">Gió biển mát rượi, ngọn hải đăng cổ kính và thiên đường hải sản tươi sống chỉ cách Sài Gòn 2 giờ.</p>
+                        </div>
+                    </div>
+                    <!-- Phú Quốc -->
+                    <div class="w-[280px] sm:w-[310px] h-[380px] relative rounded-2xl overflow-hidden flex-shrink-0 snap-start group shadow-sm hover:shadow-lg transition-all duration-300 hover-lift cursor-pointer">
+                        <img src="https://lh3.googleusercontent.com/grass-cs/ACvplmMbXm1SNSnTQ5iS3MygRQoDbE1h0s5mCtt-A6ERDQh-KvnhtC13vCkRUK85SaBhmPtoX6G_6eV_J2oCTJpeJsbO2pIi1UuZiNGfa1Th-vQxlPfxK-w353XbrN8oJN0HDT8CIPYc=w326-h312-n-k-no" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Phú Quốc">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                        <div class="absolute top-3.5 left-3.5 bg-secondary-container text-white px-2.5 py-0.5 rounded text-[10px] font-bold uppercase shadow">Đảo Ngọc</div>
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <h4 class="font-serif text-xl text-white font-bold mb-1">Phú Quốc</h4>
+                            <p class="text-white/80 text-xs line-clamp-2">Hoàng hôn buông đỏ rực rỡ, bãi sao cát trắng mịn và những khu nghỉ dưỡng sang trọng bậc nhất.</p>
+                        </div>
+                    </div>
+                    <!-- Cần Thơ -->
+                    <div class="w-[280px] sm:w-[310px] h-[380px] relative rounded-2xl overflow-hidden flex-shrink-0 snap-start group shadow-sm hover:shadow-lg transition-all duration-300 hover-lift cursor-pointer">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTwIHYsDeEqyUQFH6jPwP9STi2y5hTdKNrXeudBhwqCPw&s=10" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Cần Thơ">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                        <div class="absolute top-3.5 left-3.5 bg-white/90 text-slate-800 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase">Chợ Nổi</div>
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <h4 class="font-serif text-xl text-white font-bold mb-1">Cần Thơ</h4>
+                            <p class="text-white/80 text-xs line-clamp-2">Tây Đô hiền hòa, chợ nổi Cái Răng tấp nập sớm mai và miệt vườn trĩu quả thơm lừng.</p>
+                        </div>
+                    </div>
+                    <!-- Côn Đảo -->
+                    <div class="w-[280px] sm:w-[310px] h-[380px] relative rounded-2xl overflow-hidden flex-shrink-0 snap-start group shadow-sm hover:shadow-lg transition-all duration-300 hover-lift cursor-pointer">
+                        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Côn Đảo">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                        <div class="absolute top-3.5 left-3.5 bg-white/90 text-slate-800 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase">Biển Xanh</div>
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <h4 class="font-serif text-xl text-white font-bold mb-1">Côn Đảo</h4>
+                            <p class="text-white/80 text-xs line-clamp-2">Vẻ đẹp nguyên sơ kỳ bí giữa đại dương xanh thẳm, nơi linh thiêng ghi dấu lịch sử hào hùng.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: HƯƠNG VỊ ẨM THỰC ĐỊA PHƯƠNG (AMTHUC) -->
+        <section id="amthuc" class="bg-white rounded-3xl p-6 sm:p-10 shadow-sm border border-surface-variant scroll-mt-20">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+                <div>
+                    <h2 class="font-serif text-2xl md:text-3xl text-primary-container font-bold">Hương vị ẩm thực địa phương</h2>
+                    <p class="text-slate-500 text-xs sm:text-sm mt-1">Mỗi món ăn là một câu chuyện văn hóa được chắt lọc qua nhiều thế hệ.</p>
+                </div>
+                <a href="#" class="px-4 py-2 rounded-full border border-surface-variant text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shrink-0">
+                    Xem tất cả món ngon →
+                </a>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <!-- Food 1 -->
+                <div class="group cursor-pointer">
+                    <div class="relative h-48 rounded-2xl overflow-hidden mb-3">
+                        <img src="https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?q=80&w=500&auto=format&fit=crop" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Phở Bò Hà Nội">
+                    </div>
+                    <h4 class="font-serif text-base font-bold text-slate-900 group-hover:text-primary-container transition-colors">Phở Bò Gia Truyền</h4>
+                    <p class="text-secondary-container text-xs font-semibold mt-1">Khám phá địa chỉ →</p>
+                </div>
+                
+                <!-- Food 2 -->
+                <div class="group cursor-pointer">
+                    <div class="relative h-48 rounded-2xl overflow-hidden mb-3">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEGiZFpywhvnVs9SNomIR8LY972k--X3968qfY9qlXOA&s=10" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Bánh Mì Hội An">
+                    </div>
+                    <h4 class="font-serif text-base font-bold text-slate-900 group-hover:text-primary-container transition-colors">Bánh Mì Phố Cổ</h4>
+                    <p class="text-secondary-container text-xs font-semibold mt-1">Khám phá địa chỉ →</p>
+                </div>
+
+                <!-- Food 3 -->
+                <div class="group cursor-pointer">
+                    <div class="relative h-48 rounded-2xl overflow-hidden mb-3">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4Jbccdjg0wCKuS6tW7ceGI2z5wvFC_louxjiQ6QRrmg&s=10" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Cơm Tấm Sài Gòn">
+                    </div>
+                    <h4 class="font-serif text-base font-bold text-slate-900 group-hover:text-primary-container transition-colors">Cơm Tấm Sườn Bì</h4>
+                    <p class="text-secondary-container text-xs font-semibold mt-1">Khám phá địa chỉ →</p>
+                </div>
+
+                <!-- Food 4 -->
+                <div class="group cursor-pointer">
+                    <div class="relative h-48 rounded-2xl overflow-hidden mb-3">
+                        <img src="https://images.unsplash.com/photo-1550989460-0adf9ea622e2?q=80&w=500&auto=format&fit=crop" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Bún Bò Huế">
+                    </div>
+                    <h4 class="font-serif text-base font-bold text-slate-900 group-hover:text-primary-container transition-colors">Bún Bò Cố Đô</h4>
+                    <p class="text-secondary-container text-xs font-semibold mt-1">Khám phá địa chỉ →</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: HÀNH TRÌNH GỢI Ý (HANHTRINH) -->
+        <section id="hanhtrinh" class="scroll-mt-20">
+            <div class="text-center mb-10">
+                <span class="text-xs font-bold text-secondary-container uppercase tracking-widest bg-secondary-container/10 px-3 py-0.5 rounded inline-block mb-2">Lịch trình tối ưu</span>
+                <h2 class="font-serif text-2xl md:text-3xl text-primary-container font-bold mb-2">Hành trình gợi ý</h2>
+                <p class="text-slate-500 max-w-xl mx-auto text-xs sm:text-sm">Các lịch trình được thiết kế bài bản từ các thành viên giàu kinh nghiệm.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Itinerary 1 -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-surface-variant flex flex-col sm:flex-row hover-lift transition-all group">
+                    <div class="w-full sm:w-2/5 h-48 sm:h-auto overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?q=80&w=500&auto=format&fit=crop" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Đà Lạt">
+                        <span class="absolute top-3 left-3 bg-white/90 px-2.5 py-0.5 rounded text-[10px] font-bold text-slate-800 uppercase">3N2Đ</span>
+                    </div>
+                    <div class="p-5 w-full sm:w-3/5 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center space-x-2 mb-2">
+                                <span class="bg-slate-100 text-primary-container px-2.5 py-0.5 rounded text-[10px] font-bold">Nghỉ dưỡng</span>
+                                <span class="text-secondary-container text-xs font-bold">★ 4.9 (128)</span>
+                            </div>
+                            <h3 class="font-serif text-lg text-slate-900 font-bold mb-1.5 group-hover:text-primary-container transition-colors">Đà Lạt - Thành phố mộng mơ</h3>
+                            <p class="text-slate-500 text-xs line-clamp-2">Trải nghiệm săn mây Cầu Đất, nhâm nhi cà phê đồi thông và khám phá các góc check-in cực thơ.</p>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 mt-4 border-t border-surface-variant">
+                            <div class="flex items-center space-x-2">
+                                <img src="https://i.pravatar.cc/150?img=47" class="w-6 h-6 rounded-full" alt="Minh Anh">
+                                <span class="text-xs font-semibold text-slate-700">Nguyễn Minh Anh</span>
+                            </div>
+                            <a href="my-itinerary.html" class="text-xs text-primary-container font-semibold">Xem chi tiết →</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Itinerary 2 -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-surface-variant flex flex-col sm:flex-row hover-lift transition-all group">
+                    <div class="w-full sm:w-2/5 h-48 sm:h-auto overflow-hidden relative">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRcnp0LoJ-DBfetmb96ZlnkNhowQXH0bjOYQMwcnHCbSA&s=10" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Sa Pa">
+                        <span class="absolute top-3 left-3 bg-white/90 px-2.5 py-0.5 rounded text-[10px] font-bold text-slate-800 uppercase">4N3Đ</span>
+                    </div>
+                    <div class="p-5 w-full sm:w-3/5 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center space-x-2 mb-2">
+                                <span class="bg-slate-100 text-primary-container px-2.5 py-0.5 rounded text-[10px] font-bold">Trải nghiệm</span>
+                                <span class="text-secondary-container text-xs font-bold">★ 4.8 (95)</span>
+                            </div>
+                            <h3 class="font-serif text-lg text-slate-900 font-bold mb-1.5 group-hover:text-primary-container transition-colors">Sa Pa - Chinh phục Fansipan</h3>
+                            <p class="text-slate-500 text-xs line-clamp-2">Chinh phục đỉnh Fansipan hùng vĩ, khám phá văn hóa bản Cát Cát và thưởng thức lẩu cá tầm.</p>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 mt-4 border-t border-surface-variant">
+                            <div class="flex items-center space-x-2">
+                                <img src="https://i.pravatar.cc/150?img=11" class="w-6 h-6 rounded-full" alt="Hoàng Nam">
+                                <span class="text-xs font-semibold text-slate-700">Hoàng Nam</span>
+                            </div>
+                            <a href="my-itinerary.html" class="text-xs text-primary-container font-semibold">Xem chi tiết →</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: BLOG (BLOG) -->
+        <section id="blog" class="scroll-mt-20">
+            <div class="flex justify-between items-end mb-8 border-b border-surface-variant pb-3">
+                <div>
+                    <span class="text-xs font-bold text-secondary-container uppercase tracking-widest bg-secondary-container/10 px-3 py-0.5 rounded inline-block mb-1.5">Chia sẻ kinh nghiệm</span>
+                    <h2 class="font-serif text-2xl md:text-3xl text-primary-container font-bold">Blog & Cẩm nang du lịch</h2>
+                </div>
+                <a href="my-posts.html" class="text-xs font-semibold text-secondary-container hover:text-primary-container transition-colors">
+                    Tất cả bài viết →
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Blog 1 -->
+                <article class="bg-white rounded-2xl overflow-hidden shadow-sm border border-surface-variant flex flex-col hover-lift group cursor-pointer">
+                    <div class="overflow-hidden h-44">
+                        <img src="https://images.unsplash.com/photo-1583417637841-de5338cba465?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Ẩm thực Sài Gòn">
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col justify-between">
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-secondary-container bg-secondary-container/10 px-2 py-0.5 rounded">Ẩm thực</span>
+                            <h3 class="font-serif text-base text-slate-900 font-bold mt-2 mb-1.5 group-hover:text-primary-container transition-colors line-clamp-2">10 món ăn đường phố nhất định phải thử khi đến Sài Gòn</h3>
+                            <p class="text-xs text-slate-500 line-clamp-2">Cơm tấm đêm, hủ tiếu gõ và các quán ốc hẻm sâu mang đậm nét bình dị khó quên.</p>
+                        </div>
+                        <div class="flex items-center space-x-2 pt-3 mt-3 border-t border-slate-100 text-xs text-slate-600">
+                            <img src="https://i.pravatar.cc/150?img=47" class="w-5 h-5 rounded-full" alt="Minh Anh">
+                            <span class="font-medium">Nguyễn Minh Anh</span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Blog 2 -->
+                <article class="bg-white rounded-2xl overflow-hidden shadow-sm border border-surface-variant flex flex-col hover-lift group cursor-pointer">
+                    <div class="overflow-hidden h-44">
+                        <img src="https://images.unsplash.com/photo-1599557434190-67e4162e24fb?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Phong Nha">
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col justify-between">
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-primary-container bg-slate-100 px-2 py-0.5 rounded">Kinh nghiệm</span>
+                            <h3 class="font-serif text-base text-slate-900 font-bold mt-2 mb-1.5 group-hover:text-primary-container transition-colors line-clamp-2">Hành trình trekking khám phá hệ thống hang động Phong Nha</h3>
+                            <p class="text-xs text-slate-500 line-clamp-2">Cẩm nang chuẩn bị thể lực và trang thiết bị an toàn cho chuyến đi Quảng Bình.</p>
+                        </div>
+                        <div class="flex items-center space-x-2 pt-3 mt-3 border-t border-slate-100 text-xs text-slate-600">
+                            <img src="https://i.pravatar.cc/150?img=68" class="w-5 h-5 rounded-full" alt="Tuấn Phong">
+                            <span class="font-medium">Tuấn Phong</span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Blog 3 -->
+                <article class="bg-white rounded-2xl overflow-hidden shadow-sm border border-surface-variant flex flex-col hover-lift group cursor-pointer">
+                    <div class="overflow-hidden h-44">
+                        <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Cà phê trứng Hà Nội">
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col justify-between">
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-secondary-container bg-secondary-container/10 px-2 py-0.5 rounded">Văn hóa</span>
+                            <h3 class="font-serif text-base text-slate-900 font-bold mt-2 mb-1.5 group-hover:text-primary-container transition-colors line-clamp-2">Nghệ thuật thưởng thức cà phê trứng giữa lòng phố cổ Hà Nội</h3>
+                            <p class="text-xs text-slate-500 line-clamp-2">Một tách cà phê thơm béo kể lại lịch sử và gu ẩm thực tinh tế của người Tràng An.</p>
+                        </div>
+                        <div class="flex items-center space-x-2 pt-3 mt-3 border-t border-slate-100 text-xs text-slate-600">
+                            <img src="https://i.pravatar.cc/150?img=32" class="w-5 h-5 rounded-full" alt="Minh Tú">
+                            <span class="font-medium">Minh Tú</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+    </main>
+</div>
+<!-- KẾT THÚC: BODY CONTENT -->
+
+<!-- BẮT ĐẦU: FOOTER (PARTIAL: partials/_footer.html) -->
+<footer class="bg-[#1a3a2a] text-gray-300 pt-12 pb-8 border-t-2 border-secondary-container mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 mb-8 border-b border-[#2d5241] pb-8">
+            <div class="col-span-1 md:col-span-4 lg:col-span-5">
+                <a href="index.html" class="font-serif text-2xl italic text-white font-bold tracking-tight inline-block mb-3">
+                    LangThang<span class="text-secondary-container">.</span>
+                </a>
+                <p class="text-xs text-gray-300 max-w-sm leading-relaxed">
+                    Khám phá Việt Nam theo cách của bạn. Tìm điểm đến, lưu địa chỉ ăn ngon, đọc blog bản địa và biến mỗi chuyến đi thành một câu chuyện đáng nhớ.
+                </p>
+            </div>
+            <div class="col-span-1 md:col-span-2 lg:col-span-2">
+                <h3 class="text-white font-bold mb-3 uppercase tracking-wider text-xs">Khám phá</h3>
+                <ul class="space-y-2 text-xs text-gray-300">
+                    <li><a class="hover:text-secondary-container transition-colors" href="index.html">Trang chủ</a></li>
+                    <li><a class="hover:text-secondary-container transition-colors" href="index.html#diadiem">Địa điểm</a></li>
+                    <li><a class="hover:text-secondary-container transition-colors" href="index.html#amthuc">Ẩm thực</a></li>
+                    <li><a class="hover:text-secondary-container transition-colors" href="index.html#hanhtrinh">Hành trình</a></li>
+                </ul>
+            </div>
+            <div class="col-span-1 md:col-span-2 lg:col-span-2">
+                <h3 class="text-white font-bold mb-3 uppercase tracking-wider text-xs">Hỗ trợ</h3>
+                <ul class="space-y-2 text-xs text-gray-300">
+                    <li><a class="hover:text-secondary-container transition-colors" href="#">Về chúng tôi</a></li>
+                    <li><a class="hover:text-secondary-container transition-colors" href="#">Liên hệ</a></li>
+                    <li><a class="hover:text-secondary-container transition-colors" href="#">Điều khoản</a></li>
+                    <li><a class="hover:text-secondary-container transition-colors" href="#">Bảo mật</a></li>
+                </ul>
+            </div>
+            <div class="col-span-1 md:col-span-4 lg:col-span-3">
+                <h3 class="text-white font-bold mb-3 uppercase tracking-wider text-xs">Nhận tin mới</h3>
+                <p class="text-xs text-gray-300 mb-3">Nhận gợi ý điểm đến và món ngon mỗi tuần.</p>
+                <form class="flex" onsubmit="event.preventDefault(); alert('Cảm ơn bạn đã đăng ký!');">
+                    <input type="email" required placeholder="Email của bạn..." class="w-full bg-[#2d5241] border border-transparent rounded-l-full px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-secondary-container placeholder-gray-400">
+                    <button type="submit" class="bg-secondary-container hover:bg-secondary-hover text-white px-4 py-1.5 rounded-r-full text-xs font-semibold transition-colors">Đăng ký</button>
+                </form>
+            </div>
+        </div>
+        <div class="flex flex-col sm:flex-row justify-between items-center text-xs text-gray-400 gap-3">
+            <p>© 2026 LangThang. All rights reserved.</p>
+            <p>Thiết kế cho cộng đồng yêu du lịch & ẩm thực Việt Nam.</p>
+        </div>
+    </div>
+</footer>
+<!-- KẾT THÚC: FOOTER -->
+
+</body>
+</html>

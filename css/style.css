@@ -1,0 +1,320 @@
+/* ===============================
+   1. BIẾN CSS GLOBAL & TYPOGRAPHY
+================================= */
+:root {
+    --bg-color: #f8f6f0;       
+    --text-main: #183018;      
+    --text-muted: #5e6c5e;     
+    --accent-color: #c95c41;   
+    --footer-bg: #1c3523;      
+    
+    --font-heading: 'Playfair Display', serif;
+    --font-body: 'Inter', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased; 
+    -moz-osx-font-smoothing: grayscale;
+}
+
+a { text-decoration: none; color: inherit; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+/* ===============================
+   2. HEADER
+================================= */
+.header { background-color: var(--bg-color); padding: 15px 0; border-bottom: 1px solid rgba(24, 48, 24, 0.1); position: sticky; top: 0; z-index: 100; }
+.header-container { max-width: 1400px; margin: 0 auto; padding: 0 40px; display: flex; justify-content: space-between; align-items: center; }
+.logo { font-family: var(--font-heading); font-size: 32px; font-style: italic; font-weight: 600; color: var(--text-main); }
+.nav-links { display: flex; gap: 30px; }
+.nav-links a { font-size: 15px; font-weight: 600; color: var(--text-main); transition: color 0.3s; }
+.nav-links a:hover { color: var(--accent-color); }
+.header-actions { display: flex; align-items: center; gap: 15px; }
+.search-bar { padding: 10px 20px; border-radius: 20px; border: 1px solid rgba(24, 48, 24, 0.2); background-color: transparent; outline: none; font-family: var(--font-body); width: 200px; }
+.search-bar:focus { border-color: var(--text-main); }
+.user-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 1px solid rgba(24, 48, 24, 0.2); }
+
+/* === DROPDOWN MENU === */
+.user-menu-wrapper {
+    position: relative;
+    display: inline-block;
+}
+.user-dropdown {
+    position: absolute;
+    top: 120%;
+    right: 0;
+    width: 240px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+.user-menu-wrapper:hover .user-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.user-info {
+    padding: 16px;
+    border-bottom: 1px solid #eee;
+}
+.user-info strong {
+    display: block;
+    font-size: 15px;
+    color: var(--text-main);
+}
+.user-info span {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+.dropdown-list {
+    list-style: none;
+    padding: 8px 0;
+    margin: 0;
+}
+.dropdown-list li a {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    color: var(--text-main);
+    text-decoration: none;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+.dropdown-list li a span {
+    margin-right: 12px;
+    font-size: 16px;
+}
+.dropdown-list li a:hover {
+    background: #f8f9fa;
+    color: var(--accent-color);
+}
+.dropdown-list .separator {
+    height: 1px;
+    background: #eee;
+    margin: 8px 0;
+}
+.dropdown-list .logout {
+    color: #e74c3c;
+    font-weight: 600;
+}
+.badge-new {
+    background: #e74c3c;
+    color: white;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+
+/* ===============================
+   3. HERO BANNER
+================================= */
+.hero-banner { 
+    width: 100%; 
+    max-width: 1240px; 
+    margin: 40px auto; 
+    height: 70vh; 
+    min-height: 500px;
+    border-radius: 24px;
+    border: 8px solid #fff;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    position: relative; 
+    overflow: hidden; 
+}
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+.hero-title {
+    color: #fff;
+    font-family: var(--font-heading);
+    font-size: 56px;
+    font-weight: 700;
+    text-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    text-align: center;
+    padding: 0 20px;
+}
+.hero-img { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+    display: block; 
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+}
+
+/* ===============================
+   CHUNG: SECTION HEADERS
+================================= */
+.section-header { margin-bottom: 40px; }
+.section-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; gap: 30px; }
+.header-content { flex: 1; }
+.section-title { font-family: var(--font-heading); font-size: 38px; color: var(--text-main); line-height: 1.25; font-weight: 700; }
+.btn-outline { padding: 10px 24px; border: 1px solid rgba(24, 48, 24, 0.2); border-radius: 30px; font-size: 14px; font-weight: 500; transition: all 0.3s; white-space: nowrap; }
+.btn-outline:hover { border-color: var(--text-main); background-color: var(--text-main); color: white; }
+
+/* ===============================
+   4. KHÁM PHÁ 3 MIỀN
+================================= */
+.explore-section { padding: 60px 20px; }
+.region-block { margin-bottom: 60px; }
+.region-header-flex { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 25px; }
+.region-title { font-family: var(--font-heading); font-size: 32px; color: var(--text-main); font-weight: 600; }
+.region-subtitle { font-size: 12px; font-weight: 600; letter-spacing: 1.5px; color: var(--text-muted); text-transform: uppercase; margin-top: 5px; }
+
+.slider-controls { display: flex; gap: 10px; }
+.slide-btn { background: transparent; border: 1px solid var(--text-main); color: var(--text-main); width: 40px; height: 40px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+.slide-btn:hover { background: var(--text-main); color: #fff; }
+
+.slider-wrapper { position: relative; width: 100%; }
+.cards-track { display: flex; gap: 20px; overflow-x: auto; scroll-behavior: smooth; scroll-snap-type: x mandatory; padding-bottom: 20px; }
+.cards-track::-webkit-scrollbar { display: none; }
+.cards-track { -ms-overflow-style: none; scrollbar-width: none; }
+
+.place-card {
+    display: block; flex: 0 0 calc(20% - 16px); min-width: 220px; scroll-snap-align: start;
+    position: relative; border-radius: 20px; overflow: hidden; aspect-ratio: 2 / 3.5;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05); transition: transform 0.3s ease; background-color: #ddd; 
+}
+.place-card:hover { transform: translateY(-5px); }
+.place-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+.place-card:hover img { transform: scale(1.05); }
+
+.card-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to top, rgba(15, 30, 15, 0.95) 0%, rgba(15, 30, 15, 0.4) 50%, rgba(0,0,0,0) 100%);
+    display: flex; flex-direction: column; 
+    justify-content: flex-end; padding: 25px 20px; color: white;
+}
+
+.badge { 
+    position: absolute; top: 20px; left: 20px; 
+    font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.9); 
+}
+
+.card-text h4 { 
+    font-family: var(--font-heading); font-size: 28px; font-weight: 600; font-style: italic; margin-bottom: 6px; text-shadow: 1px 2px 4px rgba(0,0,0,0.6); 
+}
+.card-text p { font-size: 13px; font-weight: 300; line-height: 1.4; color: rgba(255,255,255,0.9); }
+
+/* ===============================
+   5. ẨM THỰC ĐỊA PHƯƠNG
+================================= */
+.food-section { padding: 40px 20px; }
+.food-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 20px; }
+.food-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: transform 0.3s; border: 1px solid #eaeaea; }
+.food-card:hover { transform: translateY(-5px); }
+.food-img-wrapper { position: relative; height: 180px; }
+.food-img-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+.food-info { padding: 20px; }
+.food-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); font-weight: 600; margin-bottom: 10px; }
+.food-title { font-family: var(--font-body); font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.food-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.food-link { font-size: 13px; font-weight: 600; color: var(--text-main); }
+.food-link:hover { color: var(--accent-color); }
+
+/* ===============================
+   6. LỊCH TRÌNH GỢI Ý
+================================= */
+.trip-section { padding: 60px 20px 80px; }
+.trip-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; margin-top: 30px; }
+.trip-card { display: flex; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #eaeaea; }
+.trip-img { width: 40%; min-height: 250px; }
+.trip-img img { width: 100%; height: 100%; object-fit: cover; }
+.trip-info { width: 60%; padding: 30px; display: flex; flex-direction: column; }
+.duration-tag { align-self: flex-start; background: transparent; border: 1px solid var(--text-main); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; color: var(--text-main); margin-bottom: 15px; }
+.trip-title { font-family: var(--font-heading); font-size: 26px; font-weight: 700; margin-bottom: 12px; line-height: 1.3; }
+.trip-desc { font-size: 14px; color: var(--text-muted); flex-grow: 1; }
+.trip-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 15px; }
+.trip-author { display: flex; align-items: center; gap: 10px; }
+.trip-author img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
+.trip-author span { font-size: 13px; font-weight: 600; }
+.btn-copy { background: transparent; border: 1px solid var(--text-main); padding: 6px 14px; border-radius: 6px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+.btn-copy:hover { background: var(--text-main); color: white; }
+.location-tag { position: absolute; top: 15px; left: 20px; font-family: "Dancing Script", cursive; font-size: 26px; font-weight: 700; color: #fff; text-shadow: 1px 1px 4px rgba(0,0,0,0.8); letter-spacing: 0.5px; }
+
+/* ===============================
+   7. BLOG CHIA SẺ
+================================= */
+.blog-section { padding: 20px 20px 100px; }
+.blog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-top: 20px;}
+.blog-card { display: flex; flex-direction: column; background: #fff; border-radius: 12px; border: 1px solid #eaeaea; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
+.blog-card img { width: 100%; height: 220px; object-fit: cover; margin-bottom: 20px; transition: transform 0.3s; }
+.blog-card:hover img { transform: scale(1.02); }
+.blog-info { padding: 0 25px 25px; display: flex; flex-direction: column; flex-grow: 1; }
+.blog-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
+.blog-meta strong { color: var(--text-main); letter-spacing: 1px; margin-right: 15px; }
+.blog-title { font-family: var(--font-heading); font-size: 24px; font-weight: 700; line-height: 1.3; margin-bottom: 12px; transition: color 0.3s; }
+.blog-card:hover .blog-title { color: var(--accent-color); }
+.blog-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 15px; flex-grow: 1; }
+.blog-link { font-size: 13px; font-weight: 600; color: var(--text-main); }
+.blog-link:hover { text-decoration: underline; color: var(--accent-color); }
+
+/* ===============================
+   8. PROFILE REDESIGN
+================================= */
+.profile-page-container { max-width: 1200px; margin: -100px auto 0; padding: 0 20px; position: relative; display: flex; gap: 30px; align-items: flex-start; }
+.profile-banner { width: 100%; height: 300px; background-image: url("https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?q=80&w=2000&auto=format&fit=crop"); background-size: cover; background-position: center; }
+.profile-left-card { width: 320px; background: #fff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 30px 20px; text-align: center; flex-shrink: 0; }
+.profile-left-card .avatar { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 6px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin: 0 auto 15px; }
+.profile-left-card h2 { font-size: 24px; font-family: var(--font-body); font-weight: 700; color: var(--text-main); display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px; }
+.rank-badge { font-size: 12px; background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 12px; font-weight: 600; }
+.profile-left-card .bio { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
+.trust-score { background: #f8f9fa; padding: 12px 20px; border-radius: 12px; font-size: 15px; color: var(--text-main); display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 25px; }
+.stats-grid { display: flex; justify-content: space-between; gap: 15px; }
+.stat-item { flex: 1; background: #f8f9fa; padding: 15px 5px; border-radius: 12px; }
+.stat-item h4 { font-size: 20px; color: var(--text-main); margin-bottom: 4px; }
+.stat-item span { font-size: 12px; color: var(--text-muted); }
+
+.profile-right-content { flex: 1; background: #fff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 30px; min-height: 500px; }
+.profile-tabs { display: flex; gap: 25px; border-bottom: 1px solid #eee; margin-bottom: 25px; }
+.profile-tabs a { font-size: 15px; color: var(--text-muted); text-decoration: none; font-weight: 600; padding-bottom: 15px; border-bottom: 2px solid transparent; transition: all 0.3s; }
+.profile-tabs a.active, .profile-tabs a:hover { color: var(--text-main); border-bottom-color: #2e7d32; }
+
+.posts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.post-card { border: 1px solid #eee; border-radius: 12px; overflow: hidden; transition: transform 0.3s; }
+.post-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+.post-card img { width: 100%; height: 180px; object-fit: cover; }
+.post-card-body { padding: 15px; }
+.post-card-title { font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.post-card-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.post-card-footer { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); }
+.stars { color: #ffc107; font-size: 14px; }
+
+/* ===============================
+   9. FOOTER
+================================= */
+.footer { background-color: var(--footer-bg); color: rgba(255, 255, 255, 0.7); padding: 80px 0 30px; }
+.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 40px; margin-bottom: 60px; }
+.footer-logo { font-family: var(--font-heading); font-size: 32px; font-style: italic; color: #fff; margin-bottom: 20px; }
+.brand-col p { font-size: 14px; line-height: 1.8; max-width: 350px; }
+.footer-col h4 { color: #fff; font-size: 12px; letter-spacing: 2px; margin-bottom: 25px; }
+.link-col ul { list-style: none; }
+.link-col ul li { margin-bottom: 15px; }
+.link-col ul li a { font-size: 14px; transition: color 0.3s; }
+.link-col ul li a:hover { color: #fff; }
+.subscribe-col p { font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
+.subscribe-form { display: flex; background: rgba(255, 255, 255, 0.1); border-radius: 30px; padding: 5px; border: 1px solid rgba(255, 255, 255, 0.2); }
+.subscribe-form input { flex-grow: 1; background: transparent; border: none; outline: none; color: #fff; padding: 0 15px; font-family: var(--font-body); }
+.subscribe-form input::placeholder { color: rgba(255, 255, 255, 0.5); }
+.subscribe-form button { background-color: var(--accent-color); color: #fff; border: none; padding: 10px 24px; border-radius: 25px; font-weight: 600; cursor: pointer; transition: background 0.3s; }
+.subscribe-form button:hover { background-color: #b54f36; }
+.footer-bottom { display: flex; justify-content: space-between; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 25px; font-size: 12px; }

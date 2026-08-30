@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>LangThang - Mạng xã hội Du lịch & Ẩm thực Việt Nam</title>
+    
+    <!-- Google Fonts: Inter & Playfair Display -->
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+    
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    
+    <!-- Tailwind CSS with Forms & Container Queries -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface": "#f8f9fa",
+              "surface-card": "#ffffff",
+              "primary-container": "#064e3b",
+              "primary-hover": "#043629",
+              "secondary-container": "#fd8a42",
+              "secondary-hover": "#e6732b",
+              "surface-variant": "#e2e8f0",
+              "outline": "#64748b"
+            },
+            fontFamily: {
+              'serif': ['"Playfair Display"', 'Georgia', 'serif'],
+              'sans': ['Inter', '-apple-system', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+    
+    <style>
+        body {
+          font-family: 'Inter', sans-serif;
+          -webkit-font-smoothing: antialiased;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+    </style>
+    <script src="../js/site-header.js" defer></script>
+</head>
+<body class="bg-surface text-slate-800 flex flex-col min-h-screen">
+
+    <!-- Navbar dùng chung cho mọi trang. -->
+    <site-header></site-header>
+
+    <!-- Main Dynamic Body Content -->
+    <!--#include virtual="content" -->
+
+    <!-- Footer -->
+    <!--#include virtual="/partials/_footer.html" -->
+
+</body>
+</html>
