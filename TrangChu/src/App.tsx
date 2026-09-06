@@ -1,5 +1,11 @@
 import { useState, useRef, type RefObject } from "react";
 import ExplorePage from "./ExplorePage";
+import PlaceDetailPage from "./PlaceDetailPage";
+import MapPage from "./MapPage";
+import FoodPage from "./FoodPage";
+import ItineraryPage from "./ItineraryPage";
+import BlogPage from "./BlogPage";
+import { Place } from "./data";
 import {
   Search,
   MapPin,
@@ -68,7 +74,14 @@ function ImgWithFallback({
   );
 }
 
-const navLinks = ["Trang chủ", "Khám phá", "Ẩm thực", "Lịch trình", "Blog"];
+const navLinks = [
+  "Trang chủ",
+  "Khám phá",
+  "Bản đồ",
+  "Ẩm thực",
+  "Hành trình",
+  "Blog",
+];
 
 const quickSuggestions = [
   "Miền Bắc",
@@ -342,6 +355,16 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
   const [foodFilter, setFoodFilter] = useState("Tất cả");
+  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
+  const [visitHistory, setVisitHistory] = useState<Place[]>([]);
+
+  const handleSelectPlace = (place: Place) => {
+    setSelectedPlace(place);
+    setVisitHistory((prev) => {
+      const filtered = prev.filter((p) => p.id !== place.id);
+      return [place, ...filtered].slice(0, 20);
+    });
+  };
   const carouselRef0 = useRef<HTMLDivElement>(null);
   const carouselRef1 = useRef<HTMLDivElement>(null);
   const carouselRef2 = useRef<HTMLDivElement>(null);
@@ -376,6 +399,57 @@ export default function App() {
       ? foods
       : foods.filter((f) => f.region === foodFilter);
 
+  if (selectedPlace) {
+    return (
+      <div className="min-h-full font-['Inter',system-ui,sans-serif]">
+        <header className="sticky top-0 z-50 border-b border-slate-200" style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)" }}>
+          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-8">
+            <a href="#" className="flex-shrink-0 text-2xl font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }} onClick={() => { setSelectedPlace(null); setActiveNav("Trang chủ"); }}>
+              <span style={{ color: "#0F172A" }}>LangThang</span><span style={{ color: "#EA580C" }}>.</span>
+            </a>
+            <nav className="hidden md:flex items-center gap-1">
+              {navLinks.map((link) => (
+                <button key={link} onClick={() => { setSelectedPlace(null); setActiveNav(link); }}
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                  style={{ color: "#374151" }}>{link}</button>
+              ))}
+            </nav>
+            <button className="text-sm font-semibold px-5 py-2.5 rounded-lg text-white" style={{ background: "#064E3B" }}>Đăng ký</button>
+          </div>
+        </header>
+        <PlaceDetailPage
+          place={selectedPlace}
+          onBack={() => setSelectedPlace(null)}
+          onViewMap={() => { setSelectedPlace(null); setActiveNav("Bản đồ"); }}
+          onSelectPlace={handleSelectPlace}
+        />
+      </div>
+    );
+  }
+
+  if (activeNav === "Bản đồ") {
+    return (
+      <div className="min-h-full font-['Inter',system-ui,sans-serif]">
+        <header className="sticky top-0 z-50 border-b border-slate-200" style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)" }}>
+          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-8">
+            <a href="#" className="flex-shrink-0 text-2xl font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }} onClick={() => setActiveNav("Trang chủ")}>
+              <span style={{ color: "#0F172A" }}>LangThang</span><span style={{ color: "#EA580C" }}>.</span>
+            </a>
+            <nav className="hidden md:flex items-center gap-1">
+              {navLinks.map((link) => (
+                <button key={link} onClick={() => setActiveNav(link)}
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                  style={activeNav === link ? { color: "#064E3B", background: "#ECFDF5" } : { color: "#374151" }}>{link}</button>
+              ))}
+            </nav>
+            <button className="text-sm font-semibold px-5 py-2.5 rounded-lg text-white" style={{ background: "#064E3B" }}>Đăng ký</button>
+          </div>
+        </header>
+        <MapPage history={visitHistory} onSelectPlace={handleSelectPlace} />
+      </div>
+    );
+  }
+
   if (activeNav === "Khám phá") {
     return (
       <div className="min-h-full font-['Inter',system-ui,sans-serif]">
@@ -407,7 +481,112 @@ export default function App() {
             </div>
           </div>
         </header>
-        <ExplorePage />
+        <ExplorePage onSelectPlace={handleSelectPlace} />
+      </div>
+    );
+  }
+
+  if (activeNav === "Ẩm thực") {
+    return (
+      <div className="min-h-full font-['Inter',system-ui,sans-serif]">
+        <header
+          className="sticky top-0 z-50 border-b border-slate-200"
+          style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)" }}
+        >
+          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-8">
+            <a href="#" className="flex-shrink-0 text-2xl font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }} onClick={() => setActiveNav("Trang chủ")}>
+              <span style={{ color: "#0F172A" }}>LangThang</span>
+              <span style={{ color: "#EA580C" }}>.</span>
+            </a>
+            <nav className="hidden md:flex items-center gap-1">
+              {navLinks.map((link) => (
+                <button
+                  key={link}
+                  onClick={() => setActiveNav(link)}
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                  style={activeNav === link ? { color: "#064E3B", background: "#ECFDF5" } : { color: "#374151" }}
+                >
+                  {link}
+                </button>
+              ))}
+            </nav>
+            <div className="flex items-center gap-3">
+              <button className="hidden sm:block text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">Đăng nhập</button>
+              <button className="text-sm font-semibold px-5 py-2.5 rounded-lg text-white" style={{ background: "#064E3B" }}>Đăng ký</button>
+            </div>
+          </div>
+        </header>
+        <FoodPage onSelectPlace={handleSelectPlace} />
+      </div>
+    );
+  }
+
+  if (activeNav === "Hành trình") {
+    return (
+      <div className="min-h-full font-['Inter',system-ui,sans-serif]">
+        <header
+          className="sticky top-0 z-50 border-b border-slate-200"
+          style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)" }}
+        >
+          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-8">
+            <a href="#" className="flex-shrink-0 text-2xl font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }} onClick={() => setActiveNav("Trang chủ")}>
+              <span style={{ color: "#0F172A" }}>LangThang</span>
+              <span style={{ color: "#EA580C" }}>.</span>
+            </a>
+            <nav className="hidden md:flex items-center gap-1">
+              {navLinks.map((link) => (
+                <button
+                  key={link}
+                  onClick={() => setActiveNav(link)}
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                  style={activeNav === link ? { color: "#064E3B", background: "#ECFDF5" } : { color: "#374151" }}
+                >
+                  {link}
+                </button>
+              ))}
+            </nav>
+            <div className="flex items-center gap-3">
+              <button className="hidden sm:block text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">Đăng nhập</button>
+              <button className="text-sm font-semibold px-5 py-2.5 rounded-lg text-white" style={{ background: "#064E3B" }}>Đăng ký</button>
+            </div>
+          </div>
+        </header>
+        <ItineraryPage />
+      </div>
+    );
+  }
+
+  if (activeNav === "Blog") {
+    return (
+      <div className="min-h-full font-['Inter',system-ui,sans-serif]">
+        <header
+          className="sticky top-0 z-50 border-b border-slate-200"
+          style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)" }}
+        >
+          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-8">
+            <a href="#" className="flex-shrink-0 text-2xl font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }} onClick={() => setActiveNav("Trang chủ")}>
+              <span style={{ color: "#0F172A" }}>LangThang</span>
+              <span style={{ color: "#EA580C" }}>.</span>
+            </a>
+            <nav className="hidden md:flex items-center gap-1">
+              {navLinks.map((link) => (
+                <button
+                  key={link}
+                  onClick={() => setActiveNav(link)}
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                  style={activeNav === link ? { color: "#064E3B", background: "#ECFDF5" } : { color: "#374151" }}
+                >
+                  {link}
+                </button>
+              ))}
+            </nav>
+            <div className="flex items-center gap-3">
+              <button className="hidden sm:block text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">Đăng nhập</button>
+              <button className="text-sm font-semibold px-5 py-2.5 rounded-lg text-white" style={{ background: "#064E3B" }}>Đăng ký</button>
+            </div>
+          </div>
+        </header>
+        <BlogPage />
       </div>
     );
   }
