@@ -5,7 +5,20 @@ import MapPage from "./MapPage";
 import FoodPage from "./FoodPage";
 import ItineraryPage from "./ItineraryPage";
 import BlogPage from "./BlogPage";
-import { Place } from "./data";
+import ProfilePage from "./ProfilePage";
+import AuthModal from "./AuthModal";
+import ProposePlaceModal from "./ProposePlaceModal";
+import {
+  Place,
+  initialUserProfile,
+  initialFavorites,
+  initialVisitLogs,
+  initialProposals,
+  UserProfileData,
+  FavoriteItem,
+  VisitLogItem,
+  ProposalItem,
+} from "./data";
 import {
   Search,
   MapPin,
@@ -23,6 +36,14 @@ import {
   Compass,
   BookOpen,
   UtensilsCrossed,
+  Plus,
+  User,
+  LogOut,
+  Bookmark,
+  CheckCircle2,
+  Sparkles,
+  FileText,
+  Shield,
 } from "lucide-react";
 
 const HERO_IMG =
@@ -358,6 +379,27 @@ export default function App() {
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [visitHistory, setVisitHistory] = useState<Place[]>([]);
 
+  // User State & SQL Data Management
+  const [user, setUser] = useState<UserProfileData | null>(initialUserProfile);
+  const [favoritesList, setFavoritesList] = useState<FavoriteItem[]>(initialFavorites);
+  const [visitLogsList, setVisitLogsList] = useState<VisitLogItem[]>(initialVisitLogs);
+  const [proposalsList, setProposalsList] = useState<ProposalItem[]>(initialProposals);
+
+  // Modals & UI Controls
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<"login" | "register" | "forgot">("login");
+  const [isProposeModalOpen, setIsProposeModalOpen] = useState(false);
+  const [profileTab, setProfileTab] = useState<
+    "reviews" | "favorites" | "visitLogs" | "proposals" | "blogs"
+  >("reviews");
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [toastMsg, setToastMsg] = useState("");
+
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(""), 2800);
+  };
+
   const handleSelectPlace = (place: Place) => {
     setSelectedPlace(place);
     setVisitHistory((prev) => {
@@ -365,6 +407,7 @@ export default function App() {
       return [place, ...filtered].slice(0, 20);
     });
   };
+
   const carouselRef0 = useRef<HTMLDivElement>(null);
   const carouselRef1 = useRef<HTMLDivElement>(null);
   const carouselRef2 = useRef<HTMLDivElement>(null);
@@ -394,249 +437,504 @@ export default function App() {
     });
   };
 
+  const handleProposeSuccess = (newProposal: ProposalItem) => {
+    setProposalsList((prev) => [newProposal, ...prev]);
+    showToast(`Đã gửi đề xuất "${newProposal.name}" thành công!`);
+    setSelectedPlace(null);
+    setActiveNav("Hồ sơ");
+    setProfileTab("proposals");
+  };
+
   const filteredFoods =
     foodFilter === "Tất cả"
       ? foods
       : foods.filter((f) => f.region === foodFilter);
 
+  // ── UNIFIED APPLICATION HEADER ──
+  const renderAppHeader = (isHero = false) => (
+    <header
+      className="sticky top-0 z-50 border-b border-slate-200 transition-all duration-300"
+      style={{
+        background: isHero ? "rgba(255,255,255,0.88)" : "rgba(255,255,255,0.96)",
+        backdropFilter: "blur(14px)",
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4 sm:gap-8">
+        {/* Logo */}
+        <a
+          href="#"
+          className="flex-shrink-0 text-2xl font-bold tracking-tight"
+          style={{ fontFamily: "'Playfair Display', serif" }}
+          onClick={(e) => {
+            e.preventDefault();
+            setSelectedPlace(null);
+            setActiveNav("Trang chủ");
+          }}
+        >
+          <span style={{ color: "#0F172A" }}>LangThang</span>
+          <span style={{ color: "#EA580C" }}>.</span>
+        </a>
+
+        {/* Navigation Links */}
+        <nav className="hidden md:flex items-center gap-1">
+          {navLinks.map((link) => (
+            <button
+              key={link}
+              onClick={() => {
+                setSelectedPlace(null);
+                setActiveNav(link);
+              }}
+              className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+                activeNav === link
+                  ? "text-emerald-900 bg-emerald-50 font-bold"
+                  : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+              }`}
+            >
+              {link}
+            </button>
+          ))}
+        </nav>
+
+        {/* Right Actions: Propose Place & User Profile Menu */}
+        <div className="flex items-center gap-3">
+          {/* Propose Place Button: Refined, solid emerald button */}
+          <button
+            onClick={() => setIsProposeModalOpen(true)}
+            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-white bg-emerald-800 hover:bg-emerald-900 active:scale-98 transition-all shadow-sm cursor-pointer"
+          >
+            <Plus size={14} strokeWidth={2.5} />
+            <span>Đề xuất địa điểm</span>
+          </button>
+
+          {user ? (
+            /* User Avatar with Clean Dropdown Menu */
+            <div className="relative">
+              <button
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center gap-2.5 p-1 pr-3 rounded-full bg-white hover:bg-slate-50 border border-slate-200/90 shadow-sm transition-all cursor-pointer"
+              >
+                <img
+                  src={user.avatarUrl}
+                  alt={user.fullName}
+                  className="w-7 h-7 rounded-full object-cover"
+                />
+                <span className="text-xs font-semibold text-slate-800 hidden sm:inline max-w-[120px] truncate">
+                  {user.fullName.split(" ").slice(-2).join(" ")}
+                </span>
+              </button>
+
+              {/* Minimalist, Clean Dropdown (Airbnb / Linear style) */}
+              {isUserMenuOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setIsUserMenuOpen(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl ring-1 ring-slate-900/5 border border-slate-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="px-4 py-3 border-b border-slate-100">
+                      <p className="text-xs font-semibold text-slate-900 truncate">
+                        {user.fullName}
+                      </p>
+                      <p className="text-[11px] text-slate-400 truncate mt-0.5">{user.email}</p>
+                      <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-medium">
+                        <Sparkles size={11} className="text-amber-500" />
+                        <span>{user.rankLevel}</span>
+                      </div>
+                    </div>
+
+                    {/* Group 1: Hồ sơ & Hoạt động cá nhân */}
+                    <div className="py-1 text-xs">
+                      <div className="px-3.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        Trang cá nhân
+                      </div>
+                      <button
+                        onClick={() => {
+                          setSelectedPlace(null);
+                          setActiveNav("Hồ sơ");
+                          setProfileTab("reviews");
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full px-3.5 py-2 text-left font-medium text-slate-700 hover:bg-emerald-50/70 hover:text-emerald-900 flex items-center gap-2.5 transition-colors group cursor-pointer"
+                      >
+                        <User size={15} className="text-slate-400 group-hover:text-emerald-700 transition-colors" />
+                        <span>Hồ sơ của tôi</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setSelectedPlace(null);
+                          setActiveNav("Hồ sơ");
+                          setProfileTab("visitLogs");
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full px-3.5 py-2 text-left font-medium text-slate-700 hover:bg-emerald-50/70 hover:text-emerald-900 flex items-center justify-between transition-colors group cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <Compass size={15} className="text-slate-400 group-hover:text-emerald-700 transition-colors" />
+                          <span>Nhật ký ghé thăm</span>
+                        </span>
+                        <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-100 group-hover:bg-emerald-100 text-slate-500 group-hover:text-emerald-800 font-semibold">
+                          {visitLogsList.length}
+                        </span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setSelectedPlace(null);
+                          setActiveNav("Hồ sơ");
+                          setProfileTab("blogs");
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full px-3.5 py-2 text-left font-medium text-slate-700 hover:bg-emerald-50/70 hover:text-emerald-900 flex items-center justify-between transition-colors group cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <FileText size={15} className="text-slate-400 group-hover:text-emerald-700 transition-colors" />
+                          <span>Blog & Lịch trình</span>
+                        </span>
+                        <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-100 group-hover:bg-emerald-100 text-slate-500 group-hover:text-emerald-800 font-semibold">
+                          3
+                        </span>
+                      </button>
+                    </div>
+
+                    {/* Group 2: Quản lý & Đóng góp */}
+                    <div className="py-1 text-xs border-t border-slate-100">
+                      <div className="px-3.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        Bộ sưu tập & Đóng góp
+                      </div>
+                      <button
+                        onClick={() => {
+                          setSelectedPlace(null);
+                          setActiveNav("Hồ sơ");
+                          setProfileTab("favorites");
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full px-3.5 py-2 text-left font-medium text-slate-700 hover:bg-emerald-50/70 hover:text-emerald-900 flex items-center justify-between transition-colors group cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <Bookmark size={15} className="text-slate-400 group-hover:text-emerald-700 transition-colors" />
+                          <span>Địa điểm đã lưu</span>
+                        </span>
+                        <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-100 group-hover:bg-emerald-100 text-slate-500 group-hover:text-emerald-800 font-semibold">
+                          {favoritesList.length}
+                        </span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setSelectedPlace(null);
+                          setActiveNav("Hồ sơ");
+                          setProfileTab("proposals");
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full px-3.5 py-2 text-left font-medium text-slate-700 hover:bg-emerald-50/70 hover:text-emerald-900 flex items-center justify-between transition-colors group cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <MapPin size={15} className="text-slate-400 group-hover:text-emerald-700 transition-colors" />
+                          <span>Đề xuất của tôi</span>
+                        </span>
+                        <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-100 group-hover:bg-emerald-100 text-slate-500 group-hover:text-emerald-800 font-semibold">
+                          {proposalsList.length}
+                        </span>
+                      </button>
+                    </div>
+
+                    {/* Group 3: Đăng xuất */}
+                    <div className="pt-1 mt-1 border-t border-slate-100">
+                      <button
+                        onClick={() => {
+                          setUser(null);
+                          setIsUserMenuOpen(false);
+                          showToast("Đã đăng xuất tài khoản.");
+                        }}
+                        className="w-full px-3.5 py-2 text-left text-xs font-medium text-slate-600 hover:text-red-600 hover:bg-red-50/70 flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <LogOut size={15} />
+                        <span>Đăng xuất</span>
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            /* Guest Buttons */
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setAuthModalMode("login");
+                  setIsAuthModalOpen(true);
+                }}
+                className="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              >
+                Đăng nhập
+              </button>
+              <button
+                onClick={() => {
+                  setAuthModalMode("register");
+                  setIsAuthModalOpen(true);
+                }}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-900 transition-all shadow-sm"
+              >
+                Đăng ký
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+
+  // ── ROUTE 1: PROFILE PAGE (HỒ SƠ CÁ NHÂN & MỤC ĐÃ LƯU & NHẬT KÝ & ĐỀ XUẤT) ──
+  if (activeNav === "Hồ sơ" || activeNav === "Mục đã lưu" || activeNav === "Nhật ký") {
+    return (
+      <div className="min-h-full font-['Inter',system-ui,sans-serif]">
+        {renderAppHeader()}
+        <ProfilePage
+          user={user || initialUserProfile}
+          onUpdateUser={(updated) => setUser(updated)}
+          favorites={favoritesList}
+          onRemoveFavorite={(id) => {
+            setFavoritesList((prev) => prev.filter((f) => f.id !== id));
+            showToast("Đã bỏ lưu khỏi danh sách.");
+          }}
+          visitLogs={visitLogsList}
+          onAddVisitLog={(newLog) => {
+            setVisitLogsList((prev) => [newLog, ...prev]);
+            showToast("Đã thêm một kỷ niệm mới vào nhật ký!");
+          }}
+          onTogglePrivacyVisitLog={(id) => {
+            setVisitLogsList((prev) =>
+              prev.map((item) => {
+                if (item.id === id) {
+                  const nextPrivacy = item.privacy === 0 ? 1 : 0;
+                  showToast(
+                    nextPrivacy === 0
+                      ? "Đã chuyển sang chế độ Công khai."
+                      : "Đã chuyển sang chế độ Chỉ mình tôi."
+                  );
+                  return { ...item, privacy: nextPrivacy };
+                }
+                return item;
+              })
+            );
+          }}
+          onUpdateVisitLog={(updatedLog) => {
+            setVisitLogsList((prev) =>
+              prev.map((item) => (item.id === updatedLog.id ? updatedLog : item))
+            );
+            showToast("Đã cập nhật kỷ niệm.");
+          }}
+          onDeleteVisitLog={(id) => {
+            setVisitLogsList((prev) => prev.filter((item) => item.id !== id));
+            showToast("Đã xóa kỷ niệm.");
+          }}
+          proposals={proposalsList}
+          onOpenProposeModal={() => setIsProposeModalOpen(true)}
+          initialTab={
+            activeNav === "Mục đã lưu"
+              ? "favorites"
+              : activeNav === "Nhật ký"
+              ? "visitLogs"
+              : profileTab
+          }
+        />
+
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          initialMode={authModalMode}
+          onLoginSuccess={(loggedInUser) => {
+            setUser(loggedInUser);
+            showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
+          }}
+        />
+
+        <ProposePlaceModal
+          isOpen={isProposeModalOpen}
+          onClose={() => setIsProposeModalOpen(false)}
+          onSubmitSuccess={handleProposeSuccess}
+        />
+
+        {toastMsg && (
+          <div className="fixed bottom-6 right-6 z-[1000] px-4 py-3 bg-emerald-900 text-white text-xs font-bold rounded-2xl shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3 duration-200">
+            <CheckCircle2 size={16} className="text-emerald-300" />
+            <span>{toastMsg}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── ROUTE 2: CHI TIẾT ĐỊA ĐIỂM (PLACE DETAIL) ──
   if (selectedPlace) {
     return (
       <div className="min-h-full font-['Inter',system-ui,sans-serif]">
-        <header className="sticky top-0 z-50 border-b border-slate-200" style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)" }}>
-          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-8">
-            <a href="#" className="flex-shrink-0 text-2xl font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }} onClick={() => { setSelectedPlace(null); setActiveNav("Trang chủ"); }}>
-              <span style={{ color: "#0F172A" }}>LangThang</span><span style={{ color: "#EA580C" }}>.</span>
-            </a>
-            <nav className="hidden md:flex items-center gap-1">
-              {navLinks.map((link) => (
-                <button key={link} onClick={() => { setSelectedPlace(null); setActiveNav(link); }}
-                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
-                  style={{ color: "#374151" }}>{link}</button>
-              ))}
-            </nav>
-            <button className="text-sm font-semibold px-5 py-2.5 rounded-lg text-white" style={{ background: "#064E3B" }}>Đăng ký</button>
-          </div>
-        </header>
+        {renderAppHeader()}
         <PlaceDetailPage
           place={selectedPlace}
           onBack={() => setSelectedPlace(null)}
-          onViewMap={() => { setSelectedPlace(null); setActiveNav("Bản đồ"); }}
+          onViewMap={() => {
+            setSelectedPlace(null);
+            setActiveNav("Bản đồ");
+          }}
           onSelectPlace={handleSelectPlace}
+        />
+
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          initialMode={authModalMode}
+          onLoginSuccess={(loggedInUser) => {
+            setUser(loggedInUser);
+            showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
+          }}
+        />
+
+        <ProposePlaceModal
+          isOpen={isProposeModalOpen}
+          onClose={() => setIsProposeModalOpen(false)}
+          onSubmitSuccess={handleProposeSuccess}
         />
       </div>
     );
   }
 
+  // ── ROUTE 3: BẢN ĐỒ (MAP PAGE) ──
   if (activeNav === "Bản đồ") {
     return (
       <div className="min-h-full font-['Inter',system-ui,sans-serif]">
-        <header className="sticky top-0 z-50 border-b border-slate-200" style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)" }}>
-          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-8">
-            <a href="#" className="flex-shrink-0 text-2xl font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }} onClick={() => setActiveNav("Trang chủ")}>
-              <span style={{ color: "#0F172A" }}>LangThang</span><span style={{ color: "#EA580C" }}>.</span>
-            </a>
-            <nav className="hidden md:flex items-center gap-1">
-              {navLinks.map((link) => (
-                <button key={link} onClick={() => setActiveNav(link)}
-                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
-                  style={activeNav === link ? { color: "#064E3B", background: "#ECFDF5" } : { color: "#374151" }}>{link}</button>
-              ))}
-            </nav>
-            <button className="text-sm font-semibold px-5 py-2.5 rounded-lg text-white" style={{ background: "#064E3B" }}>Đăng ký</button>
-          </div>
-        </header>
+        {renderAppHeader()}
         <MapPage history={visitHistory} onSelectPlace={handleSelectPlace} />
+
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          initialMode={authModalMode}
+          onLoginSuccess={(loggedInUser) => {
+            setUser(loggedInUser);
+            showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
+          }}
+        />
+
+        <ProposePlaceModal
+          isOpen={isProposeModalOpen}
+          onClose={() => setIsProposeModalOpen(false)}
+          onSubmitSuccess={handleProposeSuccess}
+        />
       </div>
     );
   }
 
+  // ── ROUTE 4: KHÁM PHÁ (EXPLORE PAGE) ──
   if (activeNav === "Khám phá") {
     return (
       <div className="min-h-full font-['Inter',system-ui,sans-serif]">
-        {/* ── HEADER ── */}
-        <header
-          className="sticky top-0 z-50 border-b border-slate-200"
-          style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)" }}
-        >
-          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-8">
-            <a href="#" className="flex-shrink-0 text-2xl font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }} onClick={() => setActiveNav("Trang chủ")}>
-              <span style={{ color: "#0F172A" }}>LangThang</span>
-              <span style={{ color: "#EA580C" }}>.</span>
-            </a>
-            <nav className="hidden md:flex items-center gap-1">
-              {navLinks.map((link) => (
-                <button
-                  key={link}
-                  onClick={() => setActiveNav(link)}
-                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
-                  style={activeNav === link ? { color: "#064E3B", background: "#ECFDF5" } : { color: "#374151" }}
-                >
-                  {link}
-                </button>
-              ))}
-            </nav>
-            <div className="flex items-center gap-3">
-              <button className="hidden sm:block text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">Đăng nhập</button>
-              <button className="text-sm font-semibold px-5 py-2.5 rounded-lg text-white" style={{ background: "#064E3B" }}>Đăng ký</button>
-            </div>
-          </div>
-        </header>
+        {renderAppHeader()}
         <ExplorePage onSelectPlace={handleSelectPlace} />
+
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          initialMode={authModalMode}
+          onLoginSuccess={(loggedInUser) => {
+            setUser(loggedInUser);
+            showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
+          }}
+        />
+
+        <ProposePlaceModal
+          isOpen={isProposeModalOpen}
+          onClose={() => setIsProposeModalOpen(false)}
+          onSubmitSuccess={handleProposeSuccess}
+        />
       </div>
     );
   }
 
+  // ── ROUTE 5: ẨM THỰC (FOOD PAGE) ──
   if (activeNav === "Ẩm thực") {
     return (
       <div className="min-h-full font-['Inter',system-ui,sans-serif]">
-        <header
-          className="sticky top-0 z-50 border-b border-slate-200"
-          style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)" }}
-        >
-          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-8">
-            <a href="#" className="flex-shrink-0 text-2xl font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }} onClick={() => setActiveNav("Trang chủ")}>
-              <span style={{ color: "#0F172A" }}>LangThang</span>
-              <span style={{ color: "#EA580C" }}>.</span>
-            </a>
-            <nav className="hidden md:flex items-center gap-1">
-              {navLinks.map((link) => (
-                <button
-                  key={link}
-                  onClick={() => setActiveNav(link)}
-                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
-                  style={activeNav === link ? { color: "#064E3B", background: "#ECFDF5" } : { color: "#374151" }}
-                >
-                  {link}
-                </button>
-              ))}
-            </nav>
-            <div className="flex items-center gap-3">
-              <button className="hidden sm:block text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">Đăng nhập</button>
-              <button className="text-sm font-semibold px-5 py-2.5 rounded-lg text-white" style={{ background: "#064E3B" }}>Đăng ký</button>
-            </div>
-          </div>
-        </header>
+        {renderAppHeader()}
         <FoodPage onSelectPlace={handleSelectPlace} />
+
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          initialMode={authModalMode}
+          onLoginSuccess={(loggedInUser) => {
+            setUser(loggedInUser);
+            showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
+          }}
+        />
+
+        <ProposePlaceModal
+          isOpen={isProposeModalOpen}
+          onClose={() => setIsProposeModalOpen(false)}
+          onSubmitSuccess={handleProposeSuccess}
+        />
       </div>
     );
   }
 
+  // ── ROUTE 6: HÀNH TRÌNH (ITINERARY PAGE) ──
   if (activeNav === "Hành trình") {
     return (
       <div className="min-h-full font-['Inter',system-ui,sans-serif]">
-        <header
-          className="sticky top-0 z-50 border-b border-slate-200"
-          style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)" }}
-        >
-          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-8">
-            <a href="#" className="flex-shrink-0 text-2xl font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }} onClick={() => setActiveNav("Trang chủ")}>
-              <span style={{ color: "#0F172A" }}>LangThang</span>
-              <span style={{ color: "#EA580C" }}>.</span>
-            </a>
-            <nav className="hidden md:flex items-center gap-1">
-              {navLinks.map((link) => (
-                <button
-                  key={link}
-                  onClick={() => setActiveNav(link)}
-                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
-                  style={activeNav === link ? { color: "#064E3B", background: "#ECFDF5" } : { color: "#374151" }}
-                >
-                  {link}
-                </button>
-              ))}
-            </nav>
-            <div className="flex items-center gap-3">
-              <button className="hidden sm:block text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">Đăng nhập</button>
-              <button className="text-sm font-semibold px-5 py-2.5 rounded-lg text-white" style={{ background: "#064E3B" }}>Đăng ký</button>
-            </div>
-          </div>
-        </header>
+        {renderAppHeader()}
         <ItineraryPage />
+
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          initialMode={authModalMode}
+          onLoginSuccess={(loggedInUser) => {
+            setUser(loggedInUser);
+            showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
+          }}
+        />
+
+        <ProposePlaceModal
+          isOpen={isProposeModalOpen}
+          onClose={() => setIsProposeModalOpen(false)}
+          onSubmitSuccess={handleProposeSuccess}
+        />
       </div>
     );
   }
 
+  // ── ROUTE 7: BLOG & CẨM NANG ──
   if (activeNav === "Blog") {
     return (
       <div className="min-h-full font-['Inter',system-ui,sans-serif]">
-        <header
-          className="sticky top-0 z-50 border-b border-slate-200"
-          style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)" }}
-        >
-          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-8">
-            <a href="#" className="flex-shrink-0 text-2xl font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }} onClick={() => setActiveNav("Trang chủ")}>
-              <span style={{ color: "#0F172A" }}>LangThang</span>
-              <span style={{ color: "#EA580C" }}>.</span>
-            </a>
-            <nav className="hidden md:flex items-center gap-1">
-              {navLinks.map((link) => (
-                <button
-                  key={link}
-                  onClick={() => setActiveNav(link)}
-                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
-                  style={activeNav === link ? { color: "#064E3B", background: "#ECFDF5" } : { color: "#374151" }}
-                >
-                  {link}
-                </button>
-              ))}
-            </nav>
-            <div className="flex items-center gap-3">
-              <button className="hidden sm:block text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">Đăng nhập</button>
-              <button className="text-sm font-semibold px-5 py-2.5 rounded-lg text-white" style={{ background: "#064E3B" }}>Đăng ký</button>
-            </div>
-          </div>
-        </header>
+        {renderAppHeader()}
         <BlogPage />
+
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          initialMode={authModalMode}
+          onLoginSuccess={(loggedInUser) => {
+            setUser(loggedInUser);
+            showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
+          }}
+        />
+
+        <ProposePlaceModal
+          isOpen={isProposeModalOpen}
+          onClose={() => setIsProposeModalOpen(false)}
+          onSubmitSuccess={handleProposeSuccess}
+        />
       </div>
     );
   }
 
+  // ── ROUTE 8: TRANG CHỦ (HOME PAGE) ──
   return (
     <div className="min-h-full bg-stone-50 font-['Inter',system-ui,sans-serif]">
       {/* ── HEADER ── */}
-      <header
-        className="sticky top-0 z-50 border-b border-slate-200"
-        style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)" }}
-      >
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-8">
-          {/* Logo */}
-          <a href="#" className="flex-shrink-0 text-2xl font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-            <span style={{ color: "#0F172A" }}>LangThang</span>
-            <span style={{ color: "#EA580C" }}>.</span>
-          </a>
-
-          {/* Nav */}
-          <nav className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <button
-                key={link}
-                onClick={() => setActiveNav(link)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  activeNav === link
-                    ? "text-emerald-800 bg-emerald-50"
-                    : "text-slate-700 hover:text-slate-900 hover:bg-slate-50"
-                }`}
-                style={activeNav === link ? { color: "#064E3B", background: "#ECFDF5" } : {}}
-              >
-                {link}
-              </button>
-            ))}
-          </nav>
-
-          {/* Actions */}
-          <div className="flex items-center gap-3">
-            <button className="hidden sm:block text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
-              Đăng nhập
-            </button>
-            <button
-              className="text-sm font-semibold px-5 py-2.5 rounded-lg text-white transition-opacity hover:opacity-90"
-              style={{ background: "#064E3B" }}
-            >
-              Đăng ký
-            </button>
-          </div>
-        </div>
-      </header>
+      {renderAppHeader(true)}
 
       {/* ── KHỐI 1: HERO ── */}
       <section className="relative min-h-[88vh] flex items-center overflow-hidden">
@@ -1179,6 +1477,32 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        initialMode={authModalMode}
+        onLoginSuccess={(loggedInUser) => {
+          setUser(loggedInUser);
+          showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
+        }}
+      />
+
+      {/* Propose Place Modal */}
+      <ProposePlaceModal
+        isOpen={isProposeModalOpen}
+        onClose={() => setIsProposeModalOpen(false)}
+        onSubmitSuccess={handleProposeSuccess}
+      />
+
+      {/* Toast Notification */}
+      {toastMsg && (
+        <div className="fixed bottom-6 right-6 z-[1000] px-4 py-3 bg-emerald-900 text-white text-xs font-bold rounded-2xl shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <CheckCircle2 size={16} className="text-emerald-300" />
+          <span>{toastMsg}</span>
+        </div>
+      )}
     </div>
   );
 }
