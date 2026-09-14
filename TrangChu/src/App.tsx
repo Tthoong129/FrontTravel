@@ -600,7 +600,8 @@ export default function App() {
                       <button
                         onClick={() => {
                           setSelectedPlace(null);
-                          setActiveNav("Bạn bè");
+                          setActiveNav("Hồ sơ");
+                          setProfileTab("friends");
                           setIsUserMenuOpen(false);
                         }}
                         className="w-full px-3.5 py-2 text-left font-medium text-slate-700 hover:bg-emerald-50/70 hover:text-emerald-900 flex items-center justify-between transition-colors group cursor-pointer"
@@ -703,8 +704,8 @@ export default function App() {
     </header>
   );
 
-  // ── ROUTE 1: PROFILE PAGE (HỒ SƠ CÁ NHÂN & MỤC ĐÃ LƯU & NHẬT KÝ & ĐỀ XUẤT) ──
-  if (activeNav === "Hồ sơ" || activeNav === "Mục đã lưu" || activeNav === "Nhật ký") {
+  // ── ROUTE 1: PROFILE PAGE (HỒ SƠ CÁ NHÂN & MỤC ĐÃ LƯU & NHẬT KÝ & ĐỀ XUẤT & BẠN BÈ) ──
+  if (activeNav === "Hồ sơ" || activeNav === "Mục đã lưu" || activeNav === "Nhật ký" || activeNav === "Bạn bè") {
     return (
       <div className="min-h-full font-['Inter',system-ui,sans-serif]">
         {renderAppHeader()}
@@ -754,6 +755,8 @@ export default function App() {
               ? "favorites"
               : activeNav === "Nhật ký"
               ? "visitLogs"
+              : activeNav === "Bạn bè"
+              ? "friends"
               : profileTab
           }
         />
