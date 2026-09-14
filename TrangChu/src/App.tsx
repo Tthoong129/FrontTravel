@@ -6,6 +6,7 @@ import FoodPage from "./FoodPage";
 import ItineraryPage from "./ItineraryPage";
 import BlogPage from "./BlogPage";
 import ProfilePage from "./ProfilePage";
+import FriendsSection from "./FriendsSection";
 import AuthModal from "./AuthModal";
 import ProposePlaceModal from "./ProposePlaceModal";
 import {
@@ -44,6 +45,7 @@ import {
   Sparkles,
   FileText,
   Shield,
+  Users,
 } from "lucide-react";
 
 const HERO_IMG =
@@ -102,6 +104,7 @@ const navLinks = [
   "Ẩm thực",
   "Hành trình",
   "Blog",
+  "Bạn bè",
 ];
 
 const quickSuggestions = [
@@ -595,6 +598,23 @@ export default function App() {
                           3
                         </span>
                       </button>
+
+                      <button
+                        onClick={() => {
+                          setSelectedPlace(null);
+                          setActiveNav("Bạn bè");
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full px-3.5 py-2 text-left font-medium text-slate-700 hover:bg-emerald-50/70 hover:text-emerald-900 flex items-center justify-between transition-colors group cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <Users size={15} className="text-slate-400 group-hover:text-emerald-700 transition-colors" />
+                          <span>Bạn bè & Đồng hành</span>
+                        </span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold">
+                          Mới
+                        </span>
+                      </button>
                     </div>
 
                     {/* Group 2: Quản lý & Đóng góp */}
@@ -930,7 +950,46 @@ export default function App() {
     );
   }
 
-  // ── ROUTE 8: TRANG CHỦ (HOME PAGE) ──
+  // ── ROUTE 8: BẠN BÈ & ĐỒNG HÀNH (FRIENDS SECTION) ──
+  if (activeNav === "Bạn bè") {
+    return (
+      <div className="min-h-full font-['Inter',system-ui,sans-serif]">
+        {renderAppHeader()}
+        <FriendsSection
+          showToast={showToast}
+          onViewTripDetail={() => {
+            setActiveNav("Hành trình");
+            showToast("Đang mở chi tiết lịch trình...");
+          }}
+        />
+
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          initialMode={authModalMode}
+          onLoginSuccess={(loggedInUser) => {
+            setUser(loggedInUser);
+            showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
+          }}
+        />
+
+        <ProposePlaceModal
+          isOpen={isProposeModalOpen}
+          onClose={() => setIsProposeModalOpen(false)}
+          onSubmitSuccess={handleProposeSuccess}
+        />
+
+        {toastMsg && (
+          <div className="fixed bottom-6 right-6 z-[1000] px-4 py-3 bg-emerald-900 text-white text-xs font-bold rounded-2xl shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3 duration-200">
+            <CheckCircle2 size={16} className="text-emerald-300" />
+            <span>{toastMsg}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── ROUTE 9: TRANG CHỦ (HOME PAGE) ──
   return (
     <div className="min-h-full bg-stone-50 font-['Inter',system-ui,sans-serif]">
       {/* ── HEADER ── */}
