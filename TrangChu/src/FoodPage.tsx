@@ -1,227 +1,431 @@
+import React, { useState } from "react";
+import {
+  Coffee,
+  UtensilsCrossed,
+  Soup,
+  Leaf,
+  Cake,
+  Award,
+  Star,
+  MapPin,
+  Clock,
+  ArrowRight,
+  Search,
+  Sparkles,
+  ChevronRight,
+} from "lucide-react";
 import { Place, places } from "./data";
 
-/* ── CSS ─────────────────────────────────────────────────────────────────── */
-const STYLE = `
-  :root {
-    --fp-black:  #18181B;
-    --fp-sub:    #71717A;
-    --fp-border: #E5E7EB;
-    --fp-bg:     #F3F4F6;
-    --fp-font:   Inter, "SF Pro Text", system-ui, sans-serif;
-  }
-  .fp *, .fp *::before, .fp *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  .fp { font-family: var(--fp-font); background: #fff; color: var(--fp-black); -webkit-font-smoothing: antialiased; }
-  .fp-wrap { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
-
-  /* ── hero ── */
-  .fp-hero { text-align: center; padding: 72px 32px 56px; max-width: 1200px; margin: 0 auto; }
-  .fp-hero-h1 { font-size: clamp(48px, 7vw, 80px); font-weight: 900; letter-spacing: -.04em; line-height: 1.05; color: var(--fp-black); margin-bottom: 16px; }
-  .fp-hero-sub { font-size: 18px; color: var(--fp-sub); max-width: 520px; margin: 0 auto 48px; line-height: 1.6; }
-
-  /* ── categories ── */
-  .fp-cats { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; }
-  .fp-cat { display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; }
-  .fp-cat-circle {
-    width: 72px; height: 72px; border-radius: 50%;
-    border: 1.5px solid var(--fp-border);
-    background: #fff;
-    display: flex; align-items: center; justify-content: center;
-    transition: transform .2s ease, box-shadow .2s ease;
-  }
-  .fp-cat:hover .fp-cat-circle { transform: translateY(-5px); box-shadow: 0 8px 24px rgba(0,0,0,.10); }
-  .fp-cat-label { font-size: 12px; font-weight: 600; color: var(--fp-black); }
-
-  /* ── section header ── */
-  .fp-section { padding: 64px 0 0; }
-  .fp-section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 24px; }
-  .fp-section-h2 { font-size: 26px; font-weight: 800; letter-spacing: -.02em; color: var(--fp-black); }
-  .fp-section-link { font-size: 14px; font-weight: 600; color: var(--fp-black); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-
-  /* ── horizontal scroll ── */
-  .fp-hscroll {
-    display: flex; gap: 16px;
-    overflow-x: auto; scroll-snap-type: x mandatory;
-    scrollbar-width: none; padding-bottom: 8px;
-  }
-  .fp-hscroll::-webkit-scrollbar { display: none; }
-
-  /* ── food card (3:4 portrait) ── */
-  .fp-food-card {
-    flex-shrink: 0; width: 210px; aspect-ratio: 3/4;
-    border-radius: 14px; overflow: hidden;
-    position: relative; cursor: pointer;
-    scroll-snap-align: start;
-    background: var(--fp-bg);
-  }
-  .fp-food-card img { width: 100%; height: 100%; object-fit: cover; transition: transform .45s ease; display: block; }
-  .fp-food-card:hover img { transform: scale(1.06); }
-  .fp-food-card-overlay {
-    position: absolute; inset: 0;
-    background: linear-gradient(to top, rgba(0,0,0,.72) 0%, rgba(0,0,0,.18) 45%, transparent 70%);
-    pointer-events: none;
-  }
-  .fp-food-card-body { position: absolute; bottom: 0; left: 0; right: 0; padding: 16px 14px; }
-  .fp-food-card-region { font-size: 10px; font-weight: 700; color: rgba(255,255,255,.65); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 4px; }
-  .fp-food-card-name { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.3; }
-
-  /* ── collection grid ── */
-  .fp-collection-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-  .fp-collection-item {
-    height: 260px; border-radius: 18px; overflow: hidden;
-    position: relative; cursor: pointer; background: var(--fp-bg);
-  }
-  .fp-collection-item img { width: 100%; height: 100%; object-fit: cover; transition: transform .45s; display: block; }
-  .fp-collection-item:hover img { transform: scale(1.04); }
-  .fp-collection-item-overlay {
-    position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.1) 100%);
-  }
-  .fp-collection-item-body { position: absolute; bottom: 0; left: 0; padding: 24px; }
-  .fp-collection-item-eyebrow { font-size: 11px; font-weight: 700; color: rgba(255,255,255,.6); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
-  .fp-collection-item-title { font-size: 22px; font-weight: 800; color: #fff; line-height: 1.25; max-width: 280px; letter-spacing: -.01em; }
-
-  /* ── nearby grid ── */
-  .fp-nearby-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
-  .fp-nearby-card { cursor: pointer; }
-  .fp-nearby-img {
-    width: 100%; aspect-ratio: 1 / 1;
-    border-radius: 14px; overflow: hidden;
-    background: var(--fp-bg); margin-bottom: 12px; position: relative;
-  }
-  .fp-nearby-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s; }
-  .fp-nearby-card:hover .fp-nearby-img img { transform: scale(1.07); }
-  .fp-nearby-badge {
-    position: absolute; top: 10px; right: 10px;
-    font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 20px;
-    background: rgba(255,255,255,.9); color: var(--fp-black);
-  }
-  .fp-nearby-name { font-size: 14px; font-weight: 700; color: var(--fp-black); margin-bottom: 4px; }
-  .fp-nearby-rating { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--fp-black); font-weight: 600; margin-bottom: 3px; }
-  .fp-nearby-price { font-size: 13px; color: var(--fp-sub); }
-
-  /* ── bottom padding ── */
-  .fp-bottom { height: 80px; }
-`;
-
-/* ── DATA ───────────────────────────────────────────────────────────────── */
 const CATEGORIES = [
-  { label: "Cà phê", icon: <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="#18181B" strokeWidth={1.8} strokeLinecap="round"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/><line x1={6} y1={2} x2={6} y2={4}/><line x1={10} y1={2} x2={10} y2={4}/><line x1={14} y1={2} x2={14} y2={4}/></svg> },
-  { label: "Ăn vặt", icon: <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="#18181B" strokeWidth={1.8} strokeLinecap="round"><path d="M4 11h16M4 6l8-3 8 3M6 11v7a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-7"/></svg> },
-  { label: "Nhà hàng", icon: <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="#18181B" strokeWidth={1.8} strokeLinecap="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg> },
-  { label: "Quán chay", icon: <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="#18181B" strokeWidth={1.8} strokeLinecap="round"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12"/><path d="M12 6c-2.67 4-4 6.67-4 10"/><path d="M12 6c2.67 4 4 6.67 4 10"/><path d="M8 12h8"/></svg> },
-  { label: "Tráng miệng", icon: <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="#18181B" strokeWidth={1.8} strokeLinecap="round"><path d="M12 2c-5.33 4-8 8-8 12a8 8 0 0 0 16 0c0-4-2.67-8-8-12z"/></svg> },
-  { label: "Đặc sản", icon: <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="#18181B" strokeWidth={1.8} strokeLinecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
+  { label: "Cà phê & Trà", icon: Coffee, count: "120+ quán" },
+  { label: "Ăn vặt phố cổ", icon: UtensilsCrossed, count: "85+ điểm" },
+  { label: "Nhà hàng đặc sản", icon: Soup, count: "95+ quán" },
+  { label: "Món chay thanh tịnh", icon: Leaf, count: "40+ điểm" },
+  { label: "Tráng miệng & Bánh", icon: Cake, count: "60+ quán" },
+  { label: "Chuẩn Michelin", icon: Award, count: "25+ điểm" },
 ];
 
 const FOOD_CARDS = [
-  { name: "Phở bò Hà Nội", region: "Miền Bắc", img: "https://images.unsplash.com/photo-1527997921830-de1cf1f9b430?w=400&h=530&fit=crop&auto=format" },
-  { name: "Bún chả Hà Nội", region: "Miền Bắc", img: "https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=400&h=530&fit=crop&auto=format" },
-  { name: "Bánh mì Hội An", region: "Miền Trung", img: "https://images.unsplash.com/photo-1517433367423-c7e5b0f35086?w=400&h=530&fit=crop&auto=format" },
-  { name: "Cơm tấm Sài Gòn", region: "Miền Nam", img: "https://images.unsplash.com/photo-1718942900279-4711345169d3?w=400&h=530&fit=crop&auto=format" },
-  { name: "Bún bò Huế", region: "Miền Trung", img: "https://images.unsplash.com/photo-1509072619873-adb3dc289b50?w=400&h=530&fit=crop&auto=format" },
-  { name: "Mì Quảng", region: "Miền Trung", img: "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?w=400&h=530&fit=crop&auto=format" },
-  { name: "Bánh xèo giòn", region: "Miền Nam", img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=530&fit=crop&auto=format" },
-  { name: "Cao lầu Hội An", region: "Miền Trung", img: "https://images.unsplash.com/photo-1552611052-33e04de081de?w=400&h=530&fit=crop&auto=format" },
+  {
+    name: "Phở Bò Tái Lăn Bát Đàn",
+    region: "Miền Bắc",
+    province: "Hà Nội",
+    price: "55.000đ - 85.000đ",
+    rating: 4.9,
+    reviews: 1420,
+    tag: "Đặc sản",
+    img: "https://images.unsplash.com/photo-1527997921830-de1cf1f9b430?w=600&h=800&fit=crop&auto=format",
+  },
+  {
+    name: "Bún Chả Nem Cua Bể",
+    region: "Miền Bắc",
+    province: "Hà Nội",
+    price: "60.000đ - 90.000đ",
+    rating: 4.8,
+    reviews: 980,
+    tag: "Gia truyền",
+    img: "https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=600&h=800&fit=crop&auto=format",
+  },
+  {
+    name: "Bánh Mì Phố Cổ Phượng",
+    region: "Miền Trung",
+    province: "Hội An",
+    price: "35.000đ - 50.000đ",
+    rating: 4.9,
+    reviews: 3200,
+    tag: "Nổi tiếng",
+    img: "https://images.unsplash.com/photo-1517433367423-c7e5b0f35086?w=600&h=800&fit=crop&auto=format",
+  },
+  {
+    name: "Cơm Tấm Sườn Bì Chả",
+    region: "Miền Nam",
+    province: "TP. Hồ Chí Minh",
+    price: "45.000đ - 75.000đ",
+    rating: 4.8,
+    reviews: 2150,
+    tag: "Sài Gòn",
+    img: "https://images.unsplash.com/photo-1718942900279-4711345169d3?w=600&h=800&fit=crop&auto=format",
+  },
+  {
+    name: "Bún Bò Giò Heo Cố Đô",
+    region: "Miền Trung",
+    province: "Thừa Thiên Huế",
+    price: "50.000đ - 70.000đ",
+    rating: 4.9,
+    reviews: 1840,
+    tag: "Cung đình",
+    img: "https://images.unsplash.com/photo-1509072619873-adb3dc289b50?w=600&h=800&fit=crop&auto=format",
+  },
+  {
+    name: "Mì Quảng Tôm Thịt Trứng",
+    region: "Miền Trung",
+    province: "Đà Nẵng",
+    price: "40.000đ - 65.000đ",
+    rating: 4.7,
+    reviews: 1120,
+    tag: "Đậm đà",
+    img: "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?w=600&h=800&fit=crop&auto=format",
+  },
+  {
+    name: "Bánh Xèo Tôm Nhảy Giòn Rụm",
+    region: "Miền Nam",
+    province: "Cần Thơ",
+    price: "35.000đ - 60.000đ",
+    rating: 4.8,
+    reviews: 890,
+    tag: "Miền Tây",
+    img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=800&fit=crop&auto=format",
+  },
+  {
+    name: "Cao Lầu Thịt Xíu Hội An",
+    region: "Miền Trung",
+    province: "Quảng Nam",
+    price: "40.000đ - 55.000đ",
+    rating: 4.9,
+    reviews: 1650,
+    tag: "Di sản",
+    img: "https://images.unsplash.com/photo-1552611052-33e04de081de?w=600&h=800&fit=crop&auto=format",
+  },
 ];
 
 const COLLECTIONS = [
-  { eyebrow: "Bộ sưu tập · Bờ biển", title: "Top 10 quán view biển đẹp nhất Việt Nam", img: "https://images.unsplash.com/photo-1559847844-5315695dadae?w=800&h=400&fit=crop&auto=format" },
-  { eyebrow: "Hành trình ẩm thực · Hội An", title: "15 món ăn không thể bỏ lỡ khi đến phố cổ", img: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&h=400&fit=crop&auto=format" },
+  {
+    eyebrow: "Bộ sưu tập · Bờ biển",
+    title: "Top 10 Quán Cà Phê View Biển Đẹp Nhất Việt Nam",
+    desc: "Ngắm trọn hoàng hôn lãng mạn cùng ly cà phê đậm đà",
+    placesCount: "10 địa điểm",
+    img: "https://images.unsplash.com/photo-1559847844-5315695dadae?w=800&h=500&fit=crop&auto=format",
+  },
+  {
+    eyebrow: "Hành trình ẩm thực · Phố cổ",
+    title: "15 Món Ăn Đường Phố Nhất Định Phải Thử Tại Hội An",
+    desc: "Khám phá hương vị truyền thống ngàn năm trong lòng phố hội",
+    placesCount: "15 món ngon",
+    img: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&h=500&fit=crop&auto=format",
+  },
 ];
 
-function StarSVG() {
-  return <svg width={12} height={12} viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>;
-}
+export default function FoodPage({
+  onSelectPlace,
+}: {
+  onSelectPlace: (p: Place) => void;
+}) {
+  const [selectedRegion, setSelectedRegion] = useState("Tất cả");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCat, setSelectedCat] = useState<string | null>(null);
 
-/* ── COMPONENT ──────────────────────────────────────────────────────────── */
-export default function FoodPage({ onSelectPlace }: { onSelectPlace: (p: Place) => void }) {
-  const foodPlaces = places.filter(p => p.type === "Ăn uống");
+  const foodPlaces = places.filter((p) => p.type === "Ăn uống");
+
+  const filteredFoodCards = FOOD_CARDS.filter((card) => {
+    const matchRegion =
+      selectedRegion === "Tất cả" || card.region === selectedRegion;
+    const matchQuery =
+      !searchQuery ||
+      card.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      card.province.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchRegion && matchQuery;
+  });
 
   return (
-    <div className="fp">
-      <style>{STYLE}</style>
+    <div className="min-h-screen bg-slate-50 text-slate-900 pb-24">
+      {/* ── Hero Banner ── */}
+      <div className="relative bg-gradient-to-b from-emerald-900 via-emerald-950 to-slate-900 text-white pt-16 pb-20 px-4 sm:px-6">
+        <div className="max-w-5xl mx-auto text-center space-y-4">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold">
+            <Sparkles size={14} className="text-amber-400" />
+            <span>Tinh Hoa Ẩm Thực Ba Miền</span>
+          </div>
 
-      {/* ── Hero ── */}
-      <div className="fp-hero">
-        <h1 className="fp-hero-h1">Hôm nay ăn gì?</h1>
-        <p className="fp-hero-sub">Khám phá hàng ngàn món ngon, quán ăn đặc sắc từ Ba Miền Việt Nam</p>
-        <div className="fp-cats">
-          {CATEGORIES.map(c => (
-            <div key={c.label} className="fp-cat">
-              <div className="fp-cat-circle">{c.icon}</div>
-              <span className="fp-cat-label">{c.label}</span>
+          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight font-serif-title">
+            Hôm Nay Bạn Muốn Ăn Gì?
+          </h1>
+          <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto font-normal">
+            Khám phá hàng ngàn món ngon đường phố, đặc sản gia truyền và những quán ăn nức tiếng được người bản xứ yêu thích.
+          </p>
+
+          {/* Quick Search & Region Filter */}
+          <div className="pt-4 max-w-2xl mx-auto">
+            <div className="relative bg-white rounded-2xl p-2 shadow-xl flex items-center gap-2 border border-slate-200">
+              <Search className="text-slate-400 ml-3" size={20} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Tìm món ngon, quán ăn, đặc sản (Phở bò, Cơm tấm, Bánh mì...)"
+                className="w-full text-slate-800 text-sm outline-none px-2 py-2 placeholder:text-slate-400"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="text-xs text-slate-400 hover:text-slate-600 px-2 cursor-pointer"
+                >
+                  Xóa
+                </button>
+              )}
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Section 1 – Đặc sản địa phương ── */}
-      <div className="fp-wrap">
-        <div className="fp-section">
-          <div className="fp-section-head">
-            <h2 className="fp-section-h2">Đặc sản địa phương</h2>
-            <span className="fp-section-link">Xem tất cả →</span>
-          </div>
-          <div className="fp-hscroll">
-            {FOOD_CARDS.map((fc, i) => (
-              <div key={i} className="fp-food-card">
-                <img src={fc.img} alt={fc.name} onError={e=>{(e.target as HTMLImageElement).src=FOOD_CARDS[0].img;}}/>
-                <div className="fp-food-card-overlay"/>
-                <div className="fp-food-card-body">
-                  <p className="fp-food-card-region">{fc.region}</p>
-                  <p className="fp-food-card-name">{fc.name}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Section 2 – Bộ sưu tập nổi bật ── */}
-        <div className="fp-section">
-          <div className="fp-section-head">
-            <h2 className="fp-section-h2">Bộ sưu tập nổi bật</h2>
-            <span className="fp-section-link">Xem tất cả →</span>
-          </div>
-          <div className="fp-collection-grid">
-            {COLLECTIONS.map((col, i) => (
-              <div key={i} className="fp-collection-item">
-                <img src={col.img} alt={col.title} onError={e=>{(e.target as HTMLImageElement).src=FOOD_CARDS[0].img;}}/>
-                <div className="fp-collection-item-overlay"/>
-                <div className="fp-collection-item-body">
-                  <p className="fp-collection-item-eyebrow">{col.eyebrow}</p>
-                  <p className="fp-collection-item-title">{col.title}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Section 3 – Quán ngon quanh đây ── */}
-        <div className="fp-section">
-          <div className="fp-section-head">
-            <h2 className="fp-section-h2">Quán ngon quanh đây</h2>
-            <span className="fp-section-link">Xem tất cả →</span>
-          </div>
-          <div className="fp-nearby-grid">
-            {foodPlaces.slice(0, 8).map(p => (
-              <div key={p.id} className="fp-nearby-card" onClick={() => onSelectPlace(p)}>
-                <div className="fp-nearby-img">
-                  <img src={p.img} alt={p.name} onError={e=>{(e.target as HTMLImageElement).src=FOOD_CARDS[0].img;}}/>
-                  <span className="fp-nearby-badge">{p.status === "Đang mở" ? "Mở cửa" : "Đóng cửa"}</span>
-                </div>
-                <p className="fp-nearby-name">{p.name}</p>
-                <div className="fp-nearby-rating">
-                  <StarSVG/> {p.rating}
-                  <span style={{fontWeight:400, color:"#71717A", marginLeft:2}}>({p.reviews.toLocaleString()})</span>
-                </div>
-                <p className="fp-nearby-price">{p.price}</p>
-              </div>
-            ))}
           </div>
         </div>
       </div>
 
-      <div className="fp-bottom"/>
+      {/* ── Category Quick Grid ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 -mt-8 relative z-10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {CATEGORIES.map((cat) => {
+            const IconComp = cat.icon;
+            const isSelected = selectedCat === cat.label;
+            return (
+              <button
+                key={cat.label}
+                onClick={() =>
+                  setSelectedCat(isSelected ? null : cat.label)
+                }
+                className={`flex flex-col items-center text-center p-4 rounded-2xl transition-all cursor-pointer border ${
+                  isSelected
+                    ? "bg-emerald-800 text-white border-emerald-800 shadow-md transform -translate-y-1"
+                    : "bg-white text-slate-800 border-slate-200 hover:border-emerald-600/40 hover:shadow-md hover:-translate-y-0.5"
+                }`}
+              >
+                <div
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center mb-2.5 ${
+                    isSelected ? "bg-white/20 text-white" : "bg-emerald-50 text-emerald-800"
+                  }`}
+                >
+                  <IconComp size={22} strokeWidth={2} />
+                </div>
+                <span className="text-xs font-bold leading-tight line-clamp-1">{cat.label}</span>
+                <span
+                  className={`text-[10px] mt-0.5 ${
+                    isSelected ? "text-emerald-100" : "text-slate-400"
+                  }`}
+                >
+                  {cat.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Main Content Container ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-12 space-y-16">
+        {/* Section 1: Đặc sản 3 Miền */}
+        <section>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 pb-3 border-b border-slate-200">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight font-serif-title">
+                Đặc Sản Vùng Miền Nổi Tiếng
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                Những món ngon mang trọn hồn cốt văn hóa ẩm thực Việt Nam
+              </p>
+            </div>
+
+            {/* Region Switcher Pills */}
+            <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl">
+              {["Tất cả", "Miền Bắc", "Miền Trung", "Miền Nam"].map((reg) => (
+                <button
+                  key={reg}
+                  onClick={() => setSelectedRegion(reg)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    selectedRegion === reg
+                      ? "bg-white text-emerald-900 shadow-sm font-bold"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  {reg}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Food Cards Grid (Portrait Cards) */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {filteredFoodCards.map((food, idx) => (
+              <div
+                key={idx}
+                className="group bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-emerald-600/40 hover:shadow-lg transition-all flex flex-col cursor-pointer"
+                onClick={() => {
+                  const matched = foodPlaces.find((p) =>
+                    p.name.toLowerCase().includes(food.province.toLowerCase()) ||
+                    p.province.toLowerCase().includes(food.province.toLowerCase())
+                  );
+                  if (matched) onSelectPlace(matched);
+                }}
+              >
+                <div className="relative aspect-[4/3] sm:aspect-[3/4] overflow-hidden bg-slate-100">
+                  <img
+                    src={food.img}
+                    alt={food.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
+                  
+                  <div className="absolute top-2.5 left-2.5">
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-700/90 text-white backdrop-blur-sm">
+                      {food.tag}
+                    </span>
+                  </div>
+
+                  <div className="absolute bottom-2.5 left-2.5 right-2.5 text-white">
+                    <p className="text-[11px] font-semibold text-emerald-200 flex items-center gap-1 mb-0.5">
+                      <MapPin size={11} /> {food.province} · {food.region}
+                    </p>
+                    <h3 className="text-sm sm:text-base font-bold text-white line-clamp-1 group-hover:text-emerald-300 transition-colors">
+                      {food.name}
+                    </h3>
+                  </div>
+                </div>
+
+                <div className="p-3.5 flex items-center justify-between text-xs border-t border-slate-100 bg-white">
+                  <div className="flex items-center gap-1 font-semibold text-slate-800">
+                    <Star size={13} className="fill-amber-400 text-amber-400" />
+                    <span>{food.rating}</span>
+                    <span className="text-slate-400 font-normal">({food.reviews})</span>
+                  </div>
+                  <span className="font-bold text-emerald-800 text-[11px]">{food.price}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Section 2: Bộ sưu tập ẩm thực nổi bật */}
+        <section>
+          <div className="flex items-end justify-between mb-6 pb-3 border-b border-slate-200">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight font-serif-title">
+                Bộ Sưu Tập Ẩm Thực Tuyển Chọn
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                Lộ trình trải nghiệm ẩm thực được biên soạn độc quyền bởi các chuyên gia
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {COLLECTIONS.map((col, idx) => (
+              <div
+                key={idx}
+                className="group relative rounded-2xl overflow-hidden aspect-[16/9] border border-slate-200 shadow-sm hover:shadow-xl transition-all cursor-pointer flex flex-col justify-end p-6"
+              >
+                <img
+                  src={col.img}
+                  alt={col.title}
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent"></div>
+
+                <div className="relative z-10 text-white space-y-2">
+                  <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-500/30 backdrop-blur-md text-emerald-200 text-[11px] font-semibold">
+                    {col.eyebrow}
+                  </div>
+                  <h3 className="text-lg sm:text-2xl font-bold text-white group-hover:text-emerald-300 transition-colors font-serif-title">
+                    {col.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-300 line-clamp-2">
+                    {col.desc}
+                  </p>
+                  <div className="pt-2 flex items-center gap-2 text-xs font-semibold text-emerald-300">
+                    <span>Khám phá bộ sưu tập</span>
+                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Section 3: Quán ăn đang mở cửa gần bạn */}
+        <section>
+          <div className="flex items-end justify-between mb-6 pb-3 border-b border-slate-200">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight font-serif-title">
+                Tọa Độ Ăn Uống Đánh Giá Cao
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                Các địa chỉ quán ăn, quán cà phê nhận được nhiều đánh giá tích cực nhất
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {foodPlaces.slice(0, 8).map((p) => (
+              <div
+                key={p.id}
+                onClick={() => onSelectPlace(p)}
+                className="group bg-white rounded-2xl p-3 border border-slate-200 hover:border-emerald-600/40 hover:shadow-lg transition-all cursor-pointer flex flex-col"
+              >
+                <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-3 bg-slate-100">
+                  <img
+                    src={p.img}
+                    alt={p.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                  <div className="absolute top-2 right-2">
+                    <span
+                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                        p.status === "Đang mở"
+                          ? "bg-emerald-600 text-white"
+                          : "bg-slate-800/80 text-slate-200"
+                      }`}
+                    >
+                      {p.status}
+                    </span>
+                  </div>
+                  <div className="absolute bottom-2 left-2">
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-black/60 text-white backdrop-blur-sm">
+                      {p.category}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <h4 className="font-bold text-sm text-slate-900 line-clamp-1 group-hover:text-emerald-800 transition-colors">
+                      {p.name}
+                    </h4>
+                    <p className="text-xs text-slate-500 flex items-center gap-1 mt-1">
+                      <MapPin size={12} className="text-slate-400 flex-shrink-0" />
+                      <span className="truncate">{p.province}</span>
+                    </p>
+                  </div>
+
+                  <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1 font-bold text-slate-800">
+                      <Star size={13} className="fill-amber-400 text-amber-400" />
+                      <span>{p.rating}</span>
+                      <span className="text-slate-400 font-normal">({p.reviews})</span>
+                    </div>
+                    <span className="font-semibold text-emerald-800">{p.price}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

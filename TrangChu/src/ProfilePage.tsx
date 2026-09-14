@@ -29,6 +29,7 @@ import {
   ExternalLink,
   Bookmark,
   FileText,
+  Users,
 } from "lucide-react";
 import {
   UserProfileData,
@@ -52,6 +53,7 @@ interface ProfilePageProps {
   onDeleteVisitLog?: (id: number) => void;
   proposals: ProposalItem[];
   onOpenProposeModal: () => void;
+  onOpenFriends?: () => void;
   initialTab?: "reviews" | "favorites" | "visitLogs" | "proposals" | "blogs";
 }
 
@@ -67,6 +69,7 @@ export default function ProfilePage({
   onDeleteVisitLog,
   proposals,
   onOpenProposeModal,
+  onOpenFriends,
   initialTab = "reviews",
 }: ProfilePageProps) {
   const [activeTab, setActiveTab] = useState<
@@ -314,6 +317,51 @@ export default function ProfilePage({
                 </span>
                 <span className="text-emerald-800 text-[11px] font-bold">Thay đổi →</span>
               </button>
+            </div>
+
+            {/* Travel Companions Quick Widget */}
+            <div className="bg-white rounded-xl p-5 border border-slate-200/80 shadow-xs">
+              <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <Users size={15} className="text-slate-700" />
+                  <h3 className="text-sm font-bold text-slate-900 tracking-tight">Bạn đồng hành</h3>
+                </div>
+                <button
+                  onClick={onOpenFriends}
+                  className="text-xs font-semibold text-emerald-800 hover:underline cursor-pointer"
+                >
+                  Xem tất cả
+                </button>
+              </div>
+              <p className="text-xs text-slate-500 mb-3 leading-relaxed">
+                3 bạn bè đã kết nối cùng chia sẻ hành trình và địa điểm yêu thích.
+              </p>
+              <div className="flex items-center -space-x-2 overflow-hidden py-1">
+                <img
+                  className="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover"
+                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop"
+                  alt="Lê Hoàng Long"
+                  title="Lê Hoàng Long"
+                />
+                <img
+                  className="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover"
+                  src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop"
+                  alt="Trần Mai Phương"
+                  title="Trần Mai Phương"
+                />
+                <img
+                  className="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover"
+                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop"
+                  alt="Vũ Đình Trọng"
+                  title="Vũ Đình Trọng"
+                />
+                <div
+                  onClick={onOpenFriends}
+                  className="inline-flex items-center justify-center h-8 w-8 rounded-full ring-2 ring-white bg-emerald-50 text-emerald-800 text-[10px] font-bold cursor-pointer hover:bg-emerald-100 transition-colors"
+                >
+                  +2
+                </div>
+              </div>
             </div>
           </aside>
 
@@ -725,6 +773,7 @@ export default function ProfilePage({
                 </article>
               </div>
             )}
+
           </div>
         </div>
       </main>

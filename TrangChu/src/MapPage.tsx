@@ -58,6 +58,14 @@ function createHeartIcon(hovered: boolean) {
 
 const LS_FAVS_KEY = "lt_favorites";
 
+// Fix leaflet marker icon assets
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
+
 // ─── MAP CONTROLLER ───────────────────────────────────────────────────────────
 function MapController({
   flyTarget, onMoveEnd,
@@ -66,12 +74,18 @@ function MapController({
   onMoveEnd: (center: [number, number], zoom: number) => void;
 }) {
   const map = useMap();
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [map]);
   useMapEvents({
     moveend: () => { const c = map.getCenter(); onMoveEnd([c.lat, c.lng], map.getZoom()); },
   });
   useEffect(() => {
     if (flyTarget) map.flyTo(flyTarget.center, flyTarget.zoom, { duration: 1 });
-  }, [flyTarget]);
+  }, [flyTarget, map]);
   return null;
 }
 
@@ -90,9 +104,9 @@ function StarRow({ rating, size = 10 }: { rating: number; size?: number }) {
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function MapPage({
-  history, onSelectPlace,
+  history = [], onSelectPlace,
 }: {
-  history: Place[];
+  history?: Place[];
   onSelectPlace: (p: Place) => void;
 }) {
   // Search & history
@@ -148,7 +162,9 @@ export default function MapPage({
 
   // Sync history to localStorage when it changes
   useEffect(() => {
-    saveLS(LS_VIEWED_KEY, history.slice(0, 10).map((p) => p.id));
+    if (history && history.length > 0) {
+      saveLS(LS_VIEWED_KEY, history.slice(0, 10).map((p) => p.id));
+    }
   }, [history]);
 
   // Filtered places
