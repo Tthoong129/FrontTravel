@@ -6,7 +6,6 @@ import FoodPage from "./FoodPage";
 import ItineraryPage from "./ItineraryPage";
 import BlogPage from "./BlogPage";
 import ProfilePage from "./ProfilePage";
-import FriendsSection from "./FriendsSection";
 import AuthModal from "./AuthModal";
 import ProposePlaceModal from "./ProposePlaceModal";
 import {
@@ -104,7 +103,6 @@ const navLinks = [
   "Ẩm thực",
   "Hành trình",
   "Blog",
-  "Bạn bè",
 ];
 
 const quickSuggestions = [
@@ -393,7 +391,7 @@ export default function App() {
   const [authModalMode, setAuthModalMode] = useState<"login" | "register" | "forgot">("login");
   const [isProposeModalOpen, setIsProposeModalOpen] = useState(false);
   const [profileTab, setProfileTab] = useState<
-    "reviews" | "favorites" | "visitLogs" | "proposals" | "blogs"
+    "reviews" | "favorites" | "visitLogs" | "proposals" | "blogs" | "friends"
   >("reviews");
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
@@ -950,46 +948,7 @@ export default function App() {
     );
   }
 
-  // ── ROUTE 8: BẠN BÈ & ĐỒNG HÀNH (FRIENDS SECTION) ──
-  if (activeNav === "Bạn bè") {
-    return (
-      <div className="min-h-full font-['Inter',system-ui,sans-serif]">
-        {renderAppHeader()}
-        <FriendsSection
-          showToast={showToast}
-          onViewTripDetail={() => {
-            setActiveNav("Hành trình");
-            showToast("Đang mở chi tiết lịch trình...");
-          }}
-        />
-
-        <AuthModal
-          isOpen={isAuthModalOpen}
-          onClose={() => setIsAuthModalOpen(false)}
-          initialMode={authModalMode}
-          onLoginSuccess={(loggedInUser) => {
-            setUser(loggedInUser);
-            showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
-          }}
-        />
-
-        <ProposePlaceModal
-          isOpen={isProposeModalOpen}
-          onClose={() => setIsProposeModalOpen(false)}
-          onSubmitSuccess={handleProposeSuccess}
-        />
-
-        {toastMsg && (
-          <div className="fixed bottom-6 right-6 z-[1000] px-4 py-3 bg-emerald-900 text-white text-xs font-bold rounded-2xl shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3 duration-200">
-            <CheckCircle2 size={16} className="text-emerald-300" />
-            <span>{toastMsg}</span>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // ── ROUTE 9: TRANG CHỦ (HOME PAGE) ──
+  // ── ROUTE 8: TRANG CHỦ (HOME PAGE) ──
   return (
     <div className="min-h-full bg-stone-50 font-['Inter',system-ui,sans-serif]">
       {/* ── HEADER ── */}

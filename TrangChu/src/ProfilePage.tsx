@@ -40,6 +40,7 @@ import {
 } from "./data";
 import FavoritesSection from "./FavoritesSection";
 import VisitedLogSection from "./VisitedLogSection";
+import FriendsSection from "./FriendsSection";
 
 interface ProfilePageProps {
   user: UserProfileData;
@@ -54,7 +55,7 @@ interface ProfilePageProps {
   proposals: ProposalItem[];
   onOpenProposeModal: () => void;
   onOpenFriends?: () => void;
-  initialTab?: "reviews" | "favorites" | "visitLogs" | "proposals" | "blogs";
+  initialTab?: "reviews" | "favorites" | "visitLogs" | "proposals" | "blogs" | "friends";
 }
 
 export default function ProfilePage({
@@ -73,7 +74,7 @@ export default function ProfilePage({
   initialTab = "reviews",
 }: ProfilePageProps) {
   const [activeTab, setActiveTab] = useState<
-    "reviews" | "favorites" | "visitLogs" | "proposals" | "blogs"
+    "reviews" | "favorites" | "visitLogs" | "proposals" | "blogs" | "friends"
   >(initialTab);
 
   // Sync activeTab when initialTab changes (from dropdown)
@@ -327,7 +328,7 @@ export default function ProfilePage({
                   <h3 className="text-sm font-bold text-slate-900 tracking-tight">Bạn đồng hành</h3>
                 </div>
                 <button
-                  onClick={onOpenFriends}
+                  onClick={() => (onOpenFriends ? onOpenFriends() : setActiveTab("friends"))}
                   className="text-xs font-semibold text-emerald-800 hover:underline cursor-pointer"
                 >
                   Xem tất cả
@@ -356,7 +357,7 @@ export default function ProfilePage({
                   title="Vũ Đình Trọng"
                 />
                 <div
-                  onClick={onOpenFriends}
+                  onClick={() => (onOpenFriends ? onOpenFriends() : setActiveTab("friends"))}
                   className="inline-flex items-center justify-center h-8 w-8 rounded-full ring-2 ring-white bg-emerald-50 text-emerald-800 text-[10px] font-bold cursor-pointer hover:bg-emerald-100 transition-colors"
                 >
                   +2
@@ -376,6 +377,7 @@ export default function ProfilePage({
                   { id: "visitLogs", label: "Nhật ký ghé thăm", count: visitLogs.length, icon: Compass },
                   { id: "proposals", label: "Địa điểm đã đề xuất", count: proposals.length, icon: MapPin },
                   { id: "blogs", label: "Blog & Lịch trình", count: 3, icon: FileText },
+                  { id: "friends", label: "Bạn bè & Đồng hành", count: 3, icon: Users },
                 ].map((t) => {
                   const Icon = t.icon;
                   const isActive = activeTab === t.id;
@@ -771,6 +773,13 @@ export default function ProfilePage({
                     <span className="text-[11px] text-slate-400">Cập nhật tháng 8, 2026</span>
                   </div>
                 </article>
+              </div>
+            )}
+
+            {/* TAB 6: BẠN BÈ & ĐỒNG HÀNH */}
+            {activeTab === "friends" && (
+              <div className="bg-white rounded-xl border border-slate-200/80 p-4 sm:p-5 shadow-xs">
+                <FriendsSection showToast={showToast || (() => {})} />
               </div>
             )}
 
