@@ -7,6 +7,8 @@ import ItineraryPage from "./ItineraryPage";
 import BlogPage from "./BlogPage";
 import ProfilePage from "./ProfilePage";
 import FriendsSection from "./FriendsSection";
+import ChatPage from "./ChatPage";
+import FloatingChatWidget from "./FloatingChatWidget";
 import AuthModal from "./AuthModal";
 import ProposePlaceModal from "./ProposePlaceModal";
 import {
@@ -46,6 +48,7 @@ import {
   FileText,
   Shield,
   Users,
+  MessageCircle,
 } from "lucide-react";
 
 const HERO_IMG =
@@ -104,6 +107,7 @@ const navLinks = [
   "Ẩm thực",
   "Hành trình",
   "Blog",
+  "Tin nhắn",
 ];
 
 const quickSuggestions = [
@@ -380,6 +384,7 @@ export default function App() {
   const [foodFilter, setFoodFilter] = useState("Tất cả");
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [visitHistory, setVisitHistory] = useState<Place[]>([]);
+  const [chatInitialConvId, setChatInitialConvId] = useState<string | undefined>(undefined);
 
   // User State & SQL Data Management
   const [user, setUser] = useState<UserProfileData | null>(initialUserProfile);
@@ -498,7 +503,24 @@ export default function App() {
         </nav>
 
         {/* Right Actions: Propose Place & User Profile Menu */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Real-time Messages Action Button */}
+          <button
+            onClick={() => {
+              setSelectedPlace(null);
+              setActiveNav("Tin nhắn");
+            }}
+            className={`relative p-2 sm:p-2.5 rounded-xl transition-all cursor-pointer ${
+              activeNav === "Tin nhắn"
+                ? "bg-emerald-100 text-emerald-950 font-bold"
+                : "text-slate-700 hover:text-emerald-900 hover:bg-emerald-50"
+            }`}
+            title="Khung chat thời gian thực"
+          >
+            <MessageCircle size={18} />
+            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white animate-pulse" />
+          </button>
+
           {/* Propose Place Button: Refined, solid emerald button */}
           <button
             onClick={() => setIsProposeModalOpen(true)}
@@ -610,6 +632,20 @@ export default function App() {
                           <Users size={15} className="text-slate-400 group-hover:text-emerald-700 transition-colors" />
                           <span>Bạn bè & Đồng hành</span>
                         </span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setSelectedPlace(null);
+                          setActiveNav("Tin nhắn");
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full px-3.5 py-2 text-left font-medium text-slate-700 hover:bg-emerald-50/70 hover:text-emerald-900 flex items-center justify-between transition-colors group cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <MessageCircle size={15} className="text-slate-400 group-hover:text-emerald-700 transition-colors" />
+                          <span>Khung chat & Tin nhắn</span>
+                        </span>
                         <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold">
                           Mới
                         </span>
@@ -704,6 +740,22 @@ export default function App() {
     </header>
   );
 
+  // Helper to render Facebook Messenger Floating Chat Head on all views
+  const renderFloatingChat = () => {
+    if (activeNav === "Tin nhắn") return null;
+    return (
+      <FloatingChatWidget
+        onOpenFullChat={(convId) => {
+          setChatInitialConvId(convId);
+          setSelectedPlace(null);
+          setActiveNav("Tin nhắn");
+        }}
+        onSelectPlace={handleSelectPlace}
+        showToast={showToast}
+      />
+    );
+  };
+
   // ── ROUTE 1: PROFILE PAGE (HỒ SƠ CÁ NHÂN & MỤC ĐÃ LƯU & NHẬT KÝ & ĐỀ XUẤT) ──
   if (activeNav === "Hồ sơ" || activeNav === "Mục đã lưu" || activeNav === "Nhật ký") {
     return (
@@ -748,12 +800,13 @@ export default function App() {
             setVisitLogsList((prev) => prev.filter((item) => item.id !== id));
             showToast("Đã xóa kỷ niệm.");
           }}
+          onNavigate={(target) => {
+            if (target === "Khám phá") setActiveNav("Khám phá");
+            if (target === "Bản đồ") setActiveNav("Bản đồ");
+            if (target === "Trang chủ") setActiveNav("Trang chủ");
+          }}
           proposals={proposalsList}
           onOpenProposeModal={() => setIsProposeModalOpen(true)}
-          onOpenFriends={() => {
-            setSelectedPlace(null);
-            setActiveNav("Bạn bè");
-          }}
           initialTab={
             activeNav === "Mục đã lưu"
               ? "favorites"
@@ -802,6 +855,12 @@ export default function App() {
             setActiveNav("Bản đồ");
           }}
           onSelectPlace={handleSelectPlace}
+          onShareToChat={(place) => {
+            setSelectedPlace(null);
+            setChatInitialConvId("c_nam");
+            setActiveNav("Tin nhắn");
+            showToast(`Mở khung chat để chia sẻ "${place.name}"`);
+          }}
         />
 
         <AuthModal
@@ -819,6 +878,8 @@ export default function App() {
           onClose={() => setIsProposeModalOpen(false)}
           onSubmitSuccess={handleProposeSuccess}
         />
+
+        {renderFloatingChat()}
       </div>
     );
   }
@@ -845,6 +906,8 @@ export default function App() {
           onClose={() => setIsProposeModalOpen(false)}
           onSubmitSuccess={handleProposeSuccess}
         />
+
+        {renderFloatingChat()}
       </div>
     );
   }
@@ -871,6 +934,8 @@ export default function App() {
           onClose={() => setIsProposeModalOpen(false)}
           onSubmitSuccess={handleProposeSuccess}
         />
+
+        {renderFloatingChat()}
       </div>
     );
   }
@@ -897,6 +962,8 @@ export default function App() {
           onClose={() => setIsProposeModalOpen(false)}
           onSubmitSuccess={handleProposeSuccess}
         />
+
+        {renderFloatingChat()}
       </div>
     );
   }
@@ -923,6 +990,8 @@ export default function App() {
           onClose={() => setIsProposeModalOpen(false)}
           onSubmitSuccess={handleProposeSuccess}
         />
+
+        {renderFloatingChat()}
       </div>
     );
   }
@@ -949,6 +1018,8 @@ export default function App() {
           onClose={() => setIsProposeModalOpen(false)}
           onSubmitSuccess={handleProposeSuccess}
         />
+
+        {renderFloatingChat()}
       </div>
     );
   }
@@ -964,6 +1035,63 @@ export default function App() {
             setActiveNav("Hành trình");
             showToast("Đang mở chi tiết lịch trình...");
           }}
+          onOpenChat={(friend) => {
+            setSelectedPlace(null);
+            setChatInitialConvId(
+              friend.id === 1 ? "c_nam" : friend.id === 2 ? "c_linh" : friend.id === 5 ? "c_thao" : undefined
+            );
+            setActiveNav("Tin nhắn");
+            showToast(`Mở cuộc trò chuyện với ${friend.fullName}`);
+          }}
+        />
+
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          initialMode={authModalMode}
+          onLoginSuccess={(loggedInUser) => {
+            setUser(loggedInUser);
+            showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
+          }}
+        />
+
+        <ProposePlaceModal
+          isOpen={isProposeModalOpen}
+          onClose={() => setIsProposeModalOpen(false)}
+          onSubmitSuccess={handleProposeSuccess}
+        />
+
+        <FloatingChatWidget
+          onOpenFullChat={(convId) => {
+            setChatInitialConvId(convId);
+            setSelectedPlace(null);
+            setActiveNav("Tin nhắn");
+          }}
+          onSelectPlace={handleSelectPlace}
+          showToast={showToast}
+        />
+
+        {toastMsg && (
+          <div className="fixed bottom-6 right-6 z-[1000] px-4 py-3 bg-emerald-900 text-white text-xs font-bold rounded-2xl shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3 duration-200">
+            <CheckCircle2 size={16} className="text-emerald-300" />
+            <span>{toastMsg}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── ROUTE 9: TIN NHẮN & KHUNG CHAT THỜI GIAN THỰC (CHAT PAGE) ──
+  if (activeNav === "Tin nhắn") {
+    return (
+      <div className="min-h-full font-['Inter',system-ui,sans-serif] flex flex-col">
+        {renderAppHeader()}
+        <ChatPage
+          initialConversationId={chatInitialConvId}
+          onBack={() => setActiveNav("Trang chủ")}
+          onSelectPlace={handleSelectPlace}
+          onViewTripDetail={() => setActiveNav("Hành trình")}
+          showToast={showToast}
         />
 
         <AuthModal
@@ -1556,6 +1684,17 @@ export default function App() {
         isOpen={isProposeModalOpen}
         onClose={() => setIsProposeModalOpen(false)}
         onSubmitSuccess={handleProposeSuccess}
+      />
+
+      {/* Floating Chat Widget across Home page */}
+      <FloatingChatWidget
+        onOpenFullChat={(convId) => {
+          setChatInitialConvId(convId);
+          setSelectedPlace(null);
+          setActiveNav("Tin nhắn");
+        }}
+        onSelectPlace={handleSelectPlace}
+        showToast={showToast}
       />
 
       {/* Toast Notification */}

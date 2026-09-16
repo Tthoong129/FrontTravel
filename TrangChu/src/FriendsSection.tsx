@@ -7,11 +7,13 @@ interface FriendsSectionProps {
   onSelectUserHistory?: (friend: FriendUser) => void;
   showToast: (msg: string) => void;
   onViewTripDetail?: (tripId: number) => void;
+  onOpenChat?: (friend: FriendUser) => void;
 }
 
 export default function FriendsSection({
   showToast,
   onViewTripDetail,
+  onOpenChat,
 }: FriendsSectionProps) {
   const [friends, setFriends] = useState<FriendUser[]>(initialFriendsData);
   const [activeTab, setActiveTab] = useState<"accepted" | "suggestions" | "incoming" | "outgoing" | "blocked">("accepted");
@@ -168,7 +170,10 @@ export default function FriendsSection({
                          </div>
                       </div>
                       <div className="flex items-center gap-2 mt-3 sm:mt-0">
-                         <button className="flex-1 sm:flex-none px-4 py-2 bg-[#E7F3FF] hover:bg-[#DBE7F2] text-[#1877F2] font-semibold text-sm rounded-lg cursor-pointer transition-colors flex items-center justify-center gap-2">
+                         <button
+                           onClick={() => onOpenChat && onOpenChat(friend)}
+                           className="flex-1 sm:flex-none px-4 py-2 bg-[#E7F3FF] hover:bg-[#DBE7F2] text-[#1877F2] font-semibold text-sm rounded-lg cursor-pointer transition-colors flex items-center justify-center gap-2"
+                         >
                            <MessageCircle size={16} /> Nhắn tin
                          </button>
                          <button onClick={() => setUnfriendConfirmUser(friend)} className="px-3 py-2 bg-gray-100 hover:bg-red-50 text-gray-700 hover:text-red-600 font-semibold text-sm rounded-lg cursor-pointer transition-colors" title="Hủy kết bạn">
@@ -381,7 +386,14 @@ export default function FriendsSection({
                 <button className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#0866FF] hover:bg-[#0759E0] text-white font-bold text-[15px] rounded-xl cursor-pointer transition-colors shadow-sm shadow-blue-500/30">
                   <UserPlus size={18} /> Thêm bạn bè
                 </button>
-                <button className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold text-[15px] rounded-xl cursor-pointer transition-colors">
+                <button
+                  onClick={() => {
+                    const target = selectedProfileUser;
+                    setSelectedProfileUser(null);
+                    if (onOpenChat) onOpenChat(target);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold text-[15px] rounded-xl cursor-pointer transition-colors"
+                >
                   <MessageCircle size={18} /> Nhắn tin
                 </button>
               </div>

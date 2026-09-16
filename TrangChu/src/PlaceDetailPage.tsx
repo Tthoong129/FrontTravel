@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { MessageCircle, ArrowLeft, Bookmark, Flag } from "lucide-react";
 import { Place, places } from "./data";
 import ReportModal from "./ReportModal";
 
@@ -334,9 +335,17 @@ function Stars({ n }: { n: number }) {
    COMPONENT
 ───────────────────────────────────────────────────────────────────────────── */
 export default function PlaceDetailPage({
-  place, onBack, onViewMap, onSelectPlace,
+  place,
+  onBack,
+  onViewMap,
+  onSelectPlace,
+  onShareToChat,
 }: {
-  place: Place; onBack:()=>void; onViewMap:()=>void; onSelectPlace:(p:Place)=>void;
+  place: Place;
+  onBack: () => void;
+  onViewMap: () => void;
+  onSelectPlace: (p: Place) => void;
+  onShareToChat?: (p: Place) => void;
 }) {
   const [saved, setSaved] = useState(false);
   const [liked, setLiked] = useState<Set<number>>(new Set());
@@ -363,6 +372,49 @@ export default function PlaceDetailPage({
 
       {/* ──────────────── PART A ──────────────── */}
       <div className="pd-wrap">
+        {/* Top Navigation & Action Row */}
+        <div className="flex items-center justify-between pt-6 pb-2 border-b border-gray-100">
+          <button
+            onClick={onBack}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+          >
+            <ArrowLeft size={16} />
+            <span>Quay lại</span>
+          </button>
+
+          <div className="flex items-center gap-2">
+            {onShareToChat && (
+              <button
+                onClick={() => onShareToChat(place)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                title="Gửi địa điểm này vào khung chat cho bạn bè"
+              >
+                <MessageCircle size={15} />
+                <span>Chia sẻ vào tin nhắn</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => setSaved(!saved)}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
+                saved
+                  ? "bg-amber-50 border-amber-300 text-amber-800 font-bold"
+                  : "bg-white border-gray-200 text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              <Bookmark size={14} className={saved ? "fill-amber-500 text-amber-500" : ""} />
+              <span>{saved ? "Đã lưu" : "Lưu địa điểm"}</span>
+            </button>
+
+            <button
+              onClick={() => setShowReport(true)}
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              title="Báo cáo địa điểm"
+            >
+              <Flag size={14} />
+            </button>
+          </div>
+        </div>
 
         {/* Header */}
         <div className="pd-header">
