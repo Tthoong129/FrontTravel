@@ -1,7 +1,8 @@
 import { useState } from "react";
 import {
-  MapPin, Clock, Plus, ArrowLeft, Bookmark, CheckCircle2, ChevronRight, Search, Check, Trash2, Users, GripVertical, Calendar, Globe, Edit2, Star, ChevronDown, ChevronUp, Calculator, X, Compass, Sparkles
+  MapPin, Clock, Plus, ArrowLeft, Bookmark, CheckCircle2, ChevronRight, Search, Check, Trash2, Users, GripVertical, Calendar, Globe, Edit2, Star, ChevronDown, ChevronUp, Calculator, X, Compass, Sparkles, Flag
 } from "lucide-react";
+import ReportModal, { ReportTargetInfo } from "./ReportModal";
 import {
   DetailedItineraryItem,
   ItineraryStop,
@@ -41,6 +42,7 @@ export default function ItineraryPage({
   const [savedItineraryIds, setSavedItineraryIds] = useState<Set<number>>(
     new Set([1])
   );
+  const [reportTarget, setReportTarget] = useState<ReportTargetInfo | null>(null);
 
   // Planner Mode State
   const [activeDayIndex, setActiveDayIndex] = useState(0);
@@ -351,9 +353,11 @@ export default function ItineraryPage({
 
     const newTrip: DetailedItineraryItem = {
       id: Date.now(),
+      slug: `trip-${Date.now()}`,
       title: newTripTitle.trim(),
       province: newTripProvince,
-      region: "Khác",
+      region: "Tự túc",
+      createdAt: "Vừa xong",
       durationDays: daysCount,
       nightsCount: Math.max(1, daysCount - 1),
       estimatedBudget: parseInt(newTripBudget, 10) || 1850000,
@@ -488,7 +492,7 @@ export default function ItineraryPage({
       duration: "1.5 giờ",
       transportMode: "Xe máy",
       visitOrder: currentStops.length + 1,
-      img: place.img || place.image,
+      img: place.img,
       lat: place.lat,
       lng: place.lng,
       rating: place.rating,
@@ -663,12 +667,21 @@ export default function ItineraryPage({
         name: stop.name,
         location: stop.address || selectedItinerary.province || "Việt Nam",
         category: stop.category || "Tham quan",
+        type: stop.category || "Du lịch",
         rating: stop.rating || 4.8,
         reviews: 128,
         price: stop.costEstimate ? `${stop.costEstimate.toLocaleString("vi-VN")} VNĐ` : "Miễn phí",
-        image: stop.img || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&h=400&fit=crop",
+        priceRange: stop.costEstimate ? `~${stop.costEstimate.toLocaleString("vi-VN")}đ` : "Miễn phí",
+        priceMax: stop.costEstimate || 0,
+        img: stop.img || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&h=400&fit=crop",
         desc: stop.note || `Điểm dừng chân trong hành trình khám phá ${selectedItinerary.province}.`,
         province: selectedItinerary.province || "Việt Nam",
+        region: "Miền Trung",
+        status: "Đang mở",
+        hours: "07:00 - 22:00",
+        tags: ["Điểm đến"],
+        lat: 16.0,
+        lng: 108.0,
       };
       onSelectPlace(fallbackPlace);
     }
@@ -888,14 +901,33 @@ export default function ItineraryPage({
                     <span className="absolute top-3 right-3 bg-gray-900/80 text-white text-xs font-medium px-2 py-0.5 rounded-md">
                       {it.durationDays}N{it.nightsCount}Đ
                     </span>
-                    <button
-                      onClick={(e) => toggleSave(it.id, e)}
-                      className={`absolute bottom-2.5 right-2.5 w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                        isSaved ? "bg-gray-900 text-white shadow-xs" : "bg-white/90 text-gray-700 hover:bg-white"
-                      }`}
-                    >
-                      <Bookmark size={14} className={isSaved ? "fill-current" : ""} />
-                    </button>
+                    <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1.5">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setReportTarget({
+                            targetType: "review",
+                            targetTitle: it.title,
+                            targetSubtitle: `Tác giả: ${it.authorName} • ${it.province}`,
+                            targetContent: it.description,
+                            targetAuthor: it.authorName,
+                          });
+                        }}
+                        className="w-8 h-8 rounded-full flex items-center justify-center bg-white/90 text-gray-600 hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer shadow-xs"
+                        title="Báo cáo lịch trình vi phạm hoặc sai thông tin"
+                      >
+                        <Flag size={13} />
+                      </button>
+                      <button
+                        onClick={(e) => toggleSave(it.id, e)}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                          isSaved ? "bg-gray-900 text-white shadow-xs" : "bg-white/90 text-gray-700 hover:bg-white"
+                        }`}
+                        title="Lưu lịch trình"
+                      >
+                        <Bookmark size={14} className={isSaved ? "fill-current" : ""} />
+                      </button>
+                    </div>
                   </div>
 
                   <div className="p-5 flex flex-col flex-1">
@@ -1042,6 +1074,21 @@ export default function ItineraryPage({
                   className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 border border-gray-200 hover:bg-gray-50 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer font-medium shadow-2xs"
                 >
                   <Plus size={12} /> Mời bạn
+                </button>
+                <button
+                  onClick={() =>
+                    setReportTarget({
+                      targetType: "review",
+                      targetTitle: selectedItinerary.title,
+                      targetSubtitle: `Tác giả: ${selectedItinerary.authorName} • ${selectedItinerary.province}`,
+                      targetContent: selectedItinerary.description,
+                      targetAuthor: selectedItinerary.authorName,
+                    })
+                  }
+                  className="flex items-center gap-1 text-xs text-gray-500 hover:text-rose-600 border border-gray-200 hover:bg-rose-50 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer font-medium shadow-2xs"
+                  title="Báo cáo lịch trình này"
+                >
+                  <Flag size={12} /> Báo cáo
                 </button>
               </div>
             </div>
@@ -1676,7 +1723,7 @@ export default function ItineraryPage({
                     >
                       <div className="flex gap-3 min-w-0">
                         <img
-                          src={p.img || p.image}
+                          src={p.img}
                           alt=""
                           className="w-16 h-16 object-cover bg-gray-100 rounded-lg border border-gray-200 flex-shrink-0"
                         />
@@ -1915,6 +1962,13 @@ export default function ItineraryPage({
             </div>
           </div>
         </div>
+      )}
+
+      {reportTarget && (
+        <ReportModal
+          initialTarget={reportTarget}
+          onClose={() => setReportTarget(null)}
+        />
       )}
     </div>
   );

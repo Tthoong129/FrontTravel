@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FriendUser, initialFriendsData } from "./data";
-import { Search, MapPin, UserPlus, X, MoreHorizontal, MessageCircle, UserX, Check, UserMinus, Filter } from "lucide-react";
+import { Search, MapPin, UserPlus, X, MoreHorizontal, MessageCircle, UserX, Check, UserMinus, Filter, Flag } from "lucide-react";
+import ReportModal, { ReportTargetInfo } from "./ReportModal";
 
 interface FriendsSectionProps {
   currentUserName?: string;
@@ -25,6 +26,7 @@ export default function FriendsSection({
 
   const [selectedProfileUser, setSelectedProfileUser] = useState<FriendUser | null>(null);
   const [unfriendConfirmUser, setUnfriendConfirmUser] = useState<FriendUser | null>(null);
+  const [reportTarget, setReportTarget] = useState<ReportTargetInfo | null>(null);
 
   const acceptedFriends = friends.filter((f) => f.status === "accepted");
   const incomingRequests = friends.filter((f) => f.status === "pending_incoming");
@@ -178,6 +180,21 @@ export default function FriendsSection({
                          </button>
                          <button onClick={() => setUnfriendConfirmUser(friend)} className="px-3 py-2 bg-gray-100 hover:bg-red-50 text-gray-700 hover:text-red-600 font-semibold text-sm rounded-lg cursor-pointer transition-colors" title="Hủy kết bạn">
                            <UserX size={16} />
+                         </button>
+                         <button
+                           onClick={() =>
+                             setReportTarget({
+                               targetType: "review",
+                               targetTitle: `Tài khoản: ${friend.fullName}`,
+                               targetSubtitle: `${friend.email} • ${friend.city}`,
+                               targetAuthor: friend.fullName,
+                               province: friend.city,
+                             })
+                           }
+                           className="px-2.5 py-2 bg-gray-100 hover:bg-rose-50 text-gray-500 hover:text-rose-600 font-semibold text-sm rounded-lg cursor-pointer transition-colors"
+                           title="Báo cáo tài khoản giả mạo hoặc vi phạm"
+                         >
+                           <Flag size={15} />
                          </button>
                       </div>
                     </div>
@@ -396,6 +413,23 @@ export default function FriendsSection({
                 >
                   <MessageCircle size={18} /> Nhắn tin
                 </button>
+                <button
+                  onClick={() => {
+                    const target = selectedProfileUser;
+                    setSelectedProfileUser(null);
+                    setReportTarget({
+                      targetType: "review",
+                      targetTitle: `Tài khoản: ${target.fullName}`,
+                      targetSubtitle: `${target.email} • ${target.city}`,
+                      targetAuthor: target.fullName,
+                      province: target.city,
+                    });
+                  }}
+                  className="px-3 py-2.5 bg-gray-100 hover:bg-rose-50 text-gray-500 hover:text-rose-600 rounded-xl cursor-pointer transition-colors"
+                  title="Báo cáo tài khoản này"
+                >
+                  <Flag size={18} />
+                </button>
               </div>
               
               <div className="mt-6 p-4 bg-gray-50 border border-gray-100 rounded-xl space-y-3">
@@ -432,6 +466,13 @@ export default function FriendsSection({
             </div>
           </div>
         </div>
+      )}
+
+      {reportTarget && (
+        <ReportModal
+          initialTarget={reportTarget}
+          onClose={() => setReportTarget(null)}
+        />
       )}
     </div>
   );

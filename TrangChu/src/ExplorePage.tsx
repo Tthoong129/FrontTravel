@@ -12,6 +12,7 @@ import {
   X,
   ArrowRight,
   RotateCcw,
+  Flag,
 } from "lucide-react";
 
 import { Place, places } from "./data";
@@ -322,7 +323,19 @@ function RegionPills({
 
 // ─── PLACE CARDS ─────────────────────────────────────────────────────────────
 
-function PlaceCardGrid({ place, saved, onToggleSave, onSelect }: { place: Place; saved: boolean; onToggleSave: () => void; onSelect: () => void }) {
+function PlaceCardGrid({
+  place,
+  saved,
+  onToggleSave,
+  onSelect,
+  onReport,
+}: {
+  place: Place;
+  saved: boolean;
+  onToggleSave: () => void;
+  onSelect: () => void;
+  onReport?: () => void;
+}) {
   return (
     <div
       className="group bg-white rounded-2xl overflow-hidden border border-slate-100 flex flex-col"
@@ -359,14 +372,40 @@ function PlaceCardGrid({ place, saved, onToggleSave, onSelect }: { place: Place;
         </div>
         <div className="mt-auto pt-3 flex items-center justify-between" style={{ borderTop: "1px solid #F1F5F9" }}>
           <span className="text-sm font-semibold" style={{ color: "#064E3B" }}>{place.price}</span>
-          <button onClick={onSelect} className="text-xs font-bold px-3 py-1.5 rounded-lg text-white hover:opacity-80" style={{ background: "#18181B" }}>Xem chi tiết</button>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onReport) onReport();
+              }}
+              className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors border border-transparent hover:border-rose-200 cursor-pointer"
+              title="Báo cáo vi phạm về địa điểm này"
+            >
+              <Flag size={13} />
+            </button>
+            <button onClick={onSelect} className="text-xs font-bold px-3 py-1.5 rounded-lg text-white hover:opacity-80 cursor-pointer" style={{ background: "#18181B" }}>
+              Xem chi tiết
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function PlaceCardList({ place, saved, onToggleSave, onSelect }: { place: Place; saved: boolean; onToggleSave: () => void; onSelect: () => void }) {
+function PlaceCardList({
+  place,
+  saved,
+  onToggleSave,
+  onSelect,
+  onReport,
+}: {
+  place: Place;
+  saved: boolean;
+  onToggleSave: () => void;
+  onSelect: () => void;
+  onReport?: () => void;
+}) {
   return (
     <div
       className="group bg-white rounded-2xl overflow-hidden border border-slate-100 flex"
@@ -386,7 +425,7 @@ function PlaceCardList({ place, saved, onToggleSave, onSelect }: { place: Place;
       <div className="flex-1 p-5 flex flex-col min-w-0">
         <div className="flex items-start justify-between gap-3 mb-2">
           <h3 className="font-bold text-slate-900 text-lg leading-snug" style={{ fontFamily: "'Playfair Display', serif" }}>{place.name}</h3>
-          <button onClick={onToggleSave} className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center border border-slate-200 transition-all hover:border-red-300 hover:bg-red-50">
+          <button onClick={onToggleSave} className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center border border-slate-200 transition-all hover:border-red-300 hover:bg-red-50 cursor-pointer">
             <Heart size={14} className={saved ? "fill-red-400 text-red-400" : "text-slate-400"} />
           </button>
         </div>
@@ -410,8 +449,19 @@ function PlaceCardList({ place, saved, onToggleSave, onSelect }: { place: Place;
             <span key={tag} className="text-[11px] font-medium px-2.5 py-1 rounded-full" style={{ background: "#ECFDF5", color: "#064E3B" }}>{tag}</span>
           ))}
         </div>
-        <div className="mt-auto flex justify-end">
-          <button onClick={onSelect} className="flex items-center gap-2 text-sm font-bold px-5 py-2.5 rounded-xl text-white hover:opacity-85" style={{ background: "#18181B" }}>
+        <div className="mt-auto flex items-center justify-end gap-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onReport) onReport();
+            }}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-colors cursor-pointer"
+            title="Báo cáo vi phạm về địa điểm này"
+          >
+            <Flag size={12} />
+            <span>Báo cáo</span>
+          </button>
+          <button onClick={onSelect} className="flex items-center gap-2 text-sm font-bold px-5 py-2.5 rounded-xl text-white hover:opacity-85 cursor-pointer" style={{ background: "#18181B" }}>
             Xem chi tiết <ArrowRight size={14} />
           </button>
         </div>
@@ -424,7 +474,13 @@ function PlaceCardList({ place, saved, onToggleSave, onSelect }: { place: Place;
 
 const PRICE_MAX = 2000000;
 
-export default function ExplorePage({ onSelectPlace }: { onSelectPlace?: (p: Place) => void }) {
+export default function ExplorePage({
+  onSelectPlace,
+  onReportPlace,
+}: {
+  onSelectPlace?: (p: Place) => void;
+  onReportPlace?: (p: Place) => void;
+}) {
   const [view, setView] = useState<"grid" | "list">("grid");
   const [sort, setSort] = useState("Phù hợp nhất");
   const [sortOpen, setSortOpen] = useState(false);
@@ -693,13 +749,27 @@ export default function ExplorePage({ onSelectPlace }: { onSelectPlace?: (p: Pla
           ) : view === "grid" ? (
             <div className="grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))" }}>
               {pagedResults.map((place) => (
-                <PlaceCardGrid key={place.id} place={place} saved={savedIds.has(place.id)} onToggleSave={() => toggleSave(place.id)} onSelect={() => onSelectPlace?.(place)} />
+                <PlaceCardGrid
+                  key={place.id}
+                  place={place}
+                  saved={savedIds.has(place.id)}
+                  onToggleSave={() => toggleSave(place.id)}
+                  onSelect={() => onSelectPlace?.(place)}
+                  onReport={() => onReportPlace?.(place)}
+                />
               ))}
             </div>
           ) : (
             <div className="flex flex-col gap-4">
               {pagedResults.map((place) => (
-                <PlaceCardList key={place.id} place={place} saved={savedIds.has(place.id)} onToggleSave={() => toggleSave(place.id)} onSelect={() => onSelectPlace?.(place)} />
+                <PlaceCardList
+                  key={place.id}
+                  place={place}
+                  saved={savedIds.has(place.id)}
+                  onToggleSave={() => toggleSave(place.id)}
+                  onSelect={() => onSelectPlace?.(place)}
+                  onReport={() => onReportPlace?.(place)}
+                />
               ))}
             </div>
           )}

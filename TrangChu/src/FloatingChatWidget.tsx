@@ -120,8 +120,8 @@ export default function FloatingChatWidget({
 
       setMessagesMap((prev) => ({
         ...prev,
-        [activeConvId]: (prev[activeConvId] || []).map((m) =>
-          m.id === newMsgId ? { ...m, status: "read" } : m
+        [activeConvId]: (prev[activeConvId] || []).map((m): ChatMessage =>
+          m.id === newMsgId ? { ...m, status: "read" as const } : m
         ).concat(replyMsg),
       }));
     }, 2000);

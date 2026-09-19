@@ -4,7 +4,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import {
   Search, Clock, MapPin, Navigation, X, Plus,
-  RotateCcw, Heart,
+  RotateCcw, Heart, Flag,
 } from "lucide-react";
 import { Place, places } from "./data";
 
@@ -104,10 +104,13 @@ function StarRow({ rating, size = 10 }: { rating: number; size?: number }) {
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function MapPage({
-  history = [], onSelectPlace,
+  history = [],
+  onSelectPlace,
+  onReportPlace,
 }: {
   history?: Place[];
   onSelectPlace: (p: Place) => void;
+  onReportPlace?: (p: Place) => void;
 }) {
   // Search & history
   const [search, setSearch] = useState("");
@@ -418,14 +421,27 @@ export default function MapPage({
                             <span className="text-[11px] font-semibold text-slate-600">{place.rating}</span>
                           </div>
                         </div>
-                        <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                          <button
-                            onClick={(e) => toggleFavorite(place.id, e)}
-                            className="w-7 h-7 rounded-full flex items-center justify-center transition-all hover:scale-110"
-                            style={{ background: isFav ? "#FEE2E2" : "#F3F4F6" }}
-                          >
-                            <Heart size={13} fill={isFav ? "#ef4444" : "none"} stroke={isFav ? "#ef4444" : "#9CA3AF"} strokeWidth={2} />
-                          </button>
+                        <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (onReportPlace) onReportPlace(place);
+                              }}
+                              className="w-7 h-7 rounded-full flex items-center justify-center transition-all hover:scale-110 hover:bg-rose-50 hover:text-rose-600 text-slate-400 cursor-pointer"
+                              style={{ background: "#F3F4F6" }}
+                              title="Báo cáo vi phạm về địa điểm này"
+                            >
+                              <Flag size={12} />
+                            </button>
+                            <button
+                              onClick={(e) => toggleFavorite(place.id, e)}
+                              className="w-7 h-7 rounded-full flex items-center justify-center transition-all hover:scale-110 cursor-pointer"
+                              style={{ background: isFav ? "#FEE2E2" : "#F3F4F6" }}
+                            >
+                              <Heart size={13} fill={isFav ? "#ef4444" : "none"} stroke={isFav ? "#ef4444" : "#9CA3AF"} strokeWidth={2} />
+                            </button>
+                          </div>
                           <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold"
                             style={{ background: place.status === "Đang mở" ? "#DCFCE7" : "#F3F4F6", color: place.status === "Đang mở" ? "#166534" : "#6B7280" }}>
                             {place.status === "Đang mở" ? "Mở" : "Đóng"}
@@ -632,7 +648,7 @@ export default function MapPage({
                       {place.status}
                     </span>
                   </div>
-                  <div style={{ display: "flex", gap: 6 }}>
+                  <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
                     <button onClick={() => addStopFromPlace(place)}
                       style={{ flex: 1, padding: "7px 0", borderRadius: 10, background: "#F3F4F6", color: "#374151", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer" }}>
                       + Thêm tuyến
@@ -642,6 +658,28 @@ export default function MapPage({
                       Xem chi tiết
                     </button>
                   </div>
+                  <button
+                    onClick={() => onReportPlace && onReportPlace(place)}
+                    style={{
+                      width: "100%",
+                      padding: "6px 0",
+                      borderRadius: 8,
+                      background: "#FFF1F2",
+                      color: "#E11D48",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      border: "1px solid #FECDD3",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 4,
+                    }}
+                    title="Báo cáo sai vị trí ghim hoặc địa điểm đóng cửa"
+                  >
+                    <Flag size={11} />
+                    <span>Báo cáo địa điểm này</span>
+                  </button>
                 </div>
               </Popup>
             );
@@ -719,12 +757,21 @@ export default function MapPage({
               </div>
             </div>
             <div className="flex flex-col gap-1.5 flex-shrink-0">
-              <button onClick={() => onSelectPlace(clickedPlace)}
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-white" style={{ background: "#18181B" }}>
-                Chi tiết
-              </button>
+              <div className="flex items-center gap-1">
+                <button onClick={() => onSelectPlace(clickedPlace)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold text-white cursor-pointer" style={{ background: "#18181B" }}>
+                  Chi tiết
+                </button>
+                <button
+                  onClick={() => onReportPlace && onReportPlace(clickedPlace)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 transition-colors cursor-pointer"
+                  title="Báo cáo sai thông tin hoặc địa điểm vi phạm"
+                >
+                  <Flag size={12} />
+                </button>
+              </div>
               <button onClick={() => setClickedPlace(null)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 text-slate-500 hover:bg-slate-50">
+                className="px-3 py-1 rounded-lg text-xs font-medium border border-slate-200 text-slate-500 hover:bg-slate-50 cursor-pointer">
                 Đóng
               </button>
             </div>

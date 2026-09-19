@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { MessageCircle, ArrowLeft, Bookmark, Flag } from "lucide-react";
 import { Place, places } from "./data";
-import ReportModal from "./ReportModal";
+import ReportModal, { ReportTargetInfo } from "./ReportModal";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PURE CSS — injected via <style> tag
@@ -24,8 +24,7 @@ const STYLE = `
     --radius-sm:   8px;
   }
 
-  /* reset minimal */
-  .pd *, .pd *::before, .pd *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  /* base */
   .pd { font-family: var(--font); background: var(--white); color: var(--black); -webkit-font-smoothing: antialiased; }
   .pd a { color: inherit; text-decoration: none; }
   .pd button { font-family: var(--font); cursor: pointer; }
@@ -349,7 +348,7 @@ export default function PlaceDetailPage({
 }) {
   const [saved, setSaved] = useState(false);
   const [liked, setLiked] = useState<Set<number>>(new Set());
-  const [showReport, setShowReport] = useState(false);
+  const [reportTarget, setReportTarget] = useState<ReportTargetInfo | null>(null);
   const open = isOpen(place.hours);
   const related = places.filter(p => p.id !== place.id && p.region === place.region).slice(0, 4);
   const imgs = [place.img, ...GALLERY_IMGS.slice(1)];
@@ -368,7 +367,13 @@ export default function PlaceDetailPage({
     <div className="pd">
       <style>{STYLE}</style>
 
-      {showReport && <ReportModal placeName={place.name} onClose={() => setShowReport(false)} />}
+      {reportTarget && (
+        <ReportModal
+          placeName={place.name}
+          initialTarget={reportTarget}
+          onClose={() => setReportTarget(null)}
+        />
+      )}
 
       {/* ──────────────── PART A ──────────────── */}
       <div className="pd-wrap">
@@ -407,11 +412,20 @@ export default function PlaceDetailPage({
             </button>
 
             <button
-              onClick={() => setShowReport(true)}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-              title="Báo cáo địa điểm"
+              onClick={() =>
+                setReportTarget({
+                  targetType: "place",
+                  targetTitle: place.name,
+                  targetSubtitle: `${place.location} • ${place.category}`,
+                  province: place.province,
+                  category: place.category,
+                })
+              }
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-rose-600 hover:bg-rose-50/80 border border-slate-200/90 hover:border-rose-200 transition-all cursor-pointer shadow-2xs"
+              title="Báo cáo vi phạm hoặc sai thông tin về địa điểm này"
             >
-              <Flag size={14} />
+              <Flag size={13} className="text-rose-500" />
+              <span>Báo cáo</span>
             </button>
           </div>
         </div>
@@ -515,39 +529,101 @@ export default function PlaceDetailPage({
               </div>
 
               {/* Review list */}
-              {REVIEWS.map(r=>(
-                <div key={r.id} className="pd-review">
-                  <div className="pd-review-top">
-                    <div className="pd-review-author">
-                      <div className="pd-avatar" style={{background:r.color}}>{r.init}</div>
-                      <div>
-                        <p className="pd-author-name">{r.name}</p>
-                        <p className="pd-author-sub">{r.city} · {r.ago}</p>
+              <div className="space-y-3.5">
+                {REVIEWS.map((r) => (
+                  <div
+                    key={r.id}
+                    className="p-4 sm:p-5 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/90 hover:border-slate-300 hover:shadow-xs transition-all space-y-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-xs shrink-0 shadow-2xs"
+                          style={{ background: r.color }}
+                        >
+                          {r.init}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-sm text-slate-900 leading-snug">{r.name}</h4>
+                          <p className="text-[11px] text-slate-500 mt-0.5">{r.city} · {r.ago}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Stars n={r.rating} />
                       </div>
                     </div>
-                    <div className="pd-review-stars-row">
-                      <Stars n={r.rating}/>
+
+                    <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
+                      {r.text}
+                    </p>
+
+                    {r.photos.length > 0 && (
+                      <div className="flex gap-2 pt-1">
+                        {r.photos.map((src, i) => (
+                          <div
+                            key={i}
+                            className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-slate-200 bg-slate-100"
+                          >
+                            <img
+                              src={src}
+                              alt=""
+                              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = GALLERY_IMGS[0];
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-200/70 text-xs">
+                      <button
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border transition-all cursor-pointer font-medium ${
+                          liked.has(r.id)
+                            ? "bg-slate-900 text-white border-slate-900 shadow-2xs"
+                            : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-900"
+                        }`}
+                        onClick={() => toggleLike(r.id)}
+                      >
+                        <svg
+                          width={11}
+                          height={11}
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                          strokeLinecap="round"
+                        >
+                          <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                        </svg>
+                        <span>Hữu ích · {liked.has(r.id) ? r.helpful + 1 : r.helpful}</span>
+                      </button>
+
+                      <button
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50/80 transition-colors cursor-pointer text-xs font-medium"
+                        onClick={() =>
+                          setReportTarget({
+                            targetType: "review",
+                            targetId: r.id,
+                            targetTitle: `Đánh giá của ${r.name}`,
+                            targetSubtitle: `Tại: ${place.name} • ${r.city}`,
+                            targetContent: r.text,
+                            targetAuthor: r.name,
+                            targetRating: r.rating,
+                            province: place.province,
+                            category: place.category,
+                          })
+                        }
+                        title="Báo cáo bài đánh giá này vi phạm"
+                      >
+                        <Flag size={12} className="text-rose-500" />
+                        <span>Báo cáo vi phạm</span>
+                      </button>
                     </div>
                   </div>
-                  <p className="pd-review-text">{r.text}</p>
-                  {r.photos.length > 0 && (
-                    <div className="pd-review-photos">
-                      {r.photos.map((src,i)=>(
-                        <div key={i} className="pd-review-thumb">
-                          <img src={src} alt="" onError={e=>{(e.target as HTMLImageElement).src=GALLERY_IMGS[0];}}/>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <button
-                    className={`pd-helpful-btn${liked.has(r.id)?" active":""}`}
-                    onClick={()=>toggleLike(r.id)}
-                  >
-                    <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-                    Hữu ích · {liked.has(r.id) ? r.helpful+1 : r.helpful}
-                  </button>
-                </div>
-              ))}
+                ))}
+              </div>
 
               <button className="pd-see-all-btn">
                 Xem tất cả {place.reviews.toLocaleString()} đánh giá
@@ -628,7 +704,18 @@ export default function PlaceDetailPage({
                     <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><circle cx={18} cy={5} r={3}/><circle cx={6} cy={12} r={3}/><circle cx={18} cy={19} r={3}/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
                     Chia sẻ
                   </button>
-                  <button className="pd-card-action" onClick={() => setShowReport(true)}>
+                  <button
+                    className="pd-card-action"
+                    onClick={() =>
+                      setReportTarget({
+                        targetType: "place",
+                        targetTitle: place.name,
+                        targetSubtitle: `${place.location} • ${place.category}`,
+                        province: place.province,
+                        category: place.category,
+                      })
+                    }
+                  >
                     <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1={4} y1={22} x2={4} y2={15}/></svg>
                     Báo cáo
                   </button>

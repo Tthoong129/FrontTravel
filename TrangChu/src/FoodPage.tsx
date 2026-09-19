@@ -13,6 +13,7 @@ import {
   Search,
   Sparkles,
   ChevronRight,
+  Flag,
 } from "lucide-react";
 import { Place, places } from "./data";
 
@@ -127,8 +128,10 @@ const COLLECTIONS = [
 
 export default function FoodPage({
   onSelectPlace,
+  onReportPlace,
 }: {
   onSelectPlace: (p: Place) => void;
+  onReportPlace?: (p: Place) => void;
 }) {
   const [selectedRegion, setSelectedRegion] = useState("Tất cả");
   const [searchQuery, setSearchQuery] = useState("");
@@ -303,7 +306,23 @@ export default function FoodPage({
                     <span>{food.rating}</span>
                     <span className="text-slate-400 font-normal">({food.reviews})</span>
                   </div>
-                  <span className="font-bold text-emerald-800 text-[11px]">{food.price}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-emerald-800 text-[11px]">{food.price}</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const matched = foodPlaces.find((p) =>
+                          p.name.toLowerCase().includes(food.province.toLowerCase()) ||
+                          p.province.toLowerCase().includes(food.province.toLowerCase())
+                        ) || places[0];
+                        if (onReportPlace) onReportPlace(matched);
+                      }}
+                      className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                      title="Báo cáo thông tin món ăn / quán ăn này"
+                    >
+                      <Flag size={11} />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -418,7 +437,19 @@ export default function FoodPage({
                       <span>{p.rating}</span>
                       <span className="text-slate-400 font-normal">({p.reviews})</span>
                     </div>
-                    <span className="font-semibold text-emerald-800">{p.price}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-emerald-800">{p.price}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onReportPlace) onReportPlace(p);
+                        }}
+                        className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                        title="Báo cáo vi phạm địa điểm ẩm thực này"
+                      >
+                        <Flag size={11} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

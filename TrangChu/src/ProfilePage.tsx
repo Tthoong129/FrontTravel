@@ -30,6 +30,10 @@ import {
   Bookmark,
   FileText,
   Users,
+  ShieldAlert,
+  Flag,
+  HelpCircle,
+  Info,
 } from "lucide-react";
 import {
   UserProfileData,
@@ -40,6 +44,7 @@ import {
 } from "./data";
 import FavoritesSection from "./FavoritesSection";
 import VisitedLogSection from "./VisitedLogSection";
+import ReportModal, { ReportTargetInfo } from "./ReportModal";
 
 interface ProfilePageProps {
   user: UserProfileData;
@@ -54,7 +59,8 @@ interface ProfilePageProps {
   proposals: ProposalItem[];
   onOpenProposeModal: () => void;
   onOpenFriends?: () => void;
-  initialTab?: "reviews" | "favorites" | "visitLogs" | "proposals" | "blogs";
+  onNavigate?: (target: string) => void;
+  initialTab?: "reviews" | "favorites" | "visitLogs" | "proposals" | "blogs" | "reports";
 }
 
 export default function ProfilePage({
@@ -73,7 +79,7 @@ export default function ProfilePage({
   initialTab = "reviews",
 }: ProfilePageProps) {
   const [activeTab, setActiveTab] = useState<
-    "reviews" | "favorites" | "visitLogs" | "proposals" | "blogs"
+    "reviews" | "favorites" | "visitLogs" | "proposals" | "blogs" | "reports"
   >(initialTab);
 
   // Sync activeTab when initialTab changes (from dropdown)
@@ -102,6 +108,11 @@ export default function ProfilePage({
 
   // Toast state
   const [toastMessage, setToastMessage] = useState("");
+
+  // Report Modal State
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportModalTab, setReportModalTab] = useState<"form" | "guide" | "history">("form");
+  const [selectedReportTarget, setSelectedReportTarget] = useState<ReportTargetInfo | undefined>(undefined);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -278,7 +289,9 @@ export default function ProfilePage({
                     <span className="text-slate-400">Điện thoại:</span>
                     <span className="font-medium text-slate-800">{user.phone}</span>
                   </div>
-                  <Lock size={12} className="text-slate-400" title="Bảo mật riêng tư" />
+                  <span title="Bảo mật riêng tư">
+                    <Lock size={12} className="text-slate-400" />
+                  </span>
                 </li>
 
                 <li className="flex items-center gap-2.5">
@@ -376,6 +389,7 @@ export default function ProfilePage({
                   { id: "visitLogs", label: "Nhật ký ghé thăm", count: visitLogs.length, icon: Compass },
                   { id: "proposals", label: "Địa điểm đã đề xuất", count: proposals.length, icon: MapPin },
                   { id: "blogs", label: "Blog & Lịch trình", count: 3, icon: FileText },
+                  { id: "reports", label: "Tố cáo vi phạm", count: 3, icon: ShieldAlert },
                 ].map((t) => {
                   const Icon = t.icon;
                   const isActive = activeTab === t.id;
@@ -774,9 +788,252 @@ export default function ProfilePage({
               </div>
             )}
 
+            {/* TAB 6: TỐ CÁO VI PHẠM (dbo.Reports & dbo.Appeals - CLO3) */}
+            {activeTab === "reports" && (
+              <div className="space-y-4">
+                {/* Header Banner */}
+                <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 shrink-0">
+                      <ShieldAlert size={20} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm sm:text-base font-bold text-slate-900">
+                          Báo Cáo Vi Phạm Đã Gửi (User Reports)
+                        </h3>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-200">
+                          dbo.Reports
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Theo dõi thẩm định từ Category Admin, kiểm tra kết quả xử phạt và khiếu nại (Appeals).
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => {
+                        setReportModalTab("guide");
+                        setSelectedReportTarget(undefined);
+                        setIsReportModalOpen(true);
+                      }}
+                      className="px-3 py-2 rounded-xl text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <HelpCircle size={14} />
+                      <span>Report những gì?</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setReportModalTab("form");
+                        setSelectedReportTarget(undefined);
+                        setIsReportModalOpen(true);
+                      }}
+                      className="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Flag size={14} />
+                      <span>+ Gửi báo cáo mới</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* 3 Thẻ thống kê */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="p-3.5 rounded-xl bg-amber-50/60 border border-amber-200/80">
+                    <div className="text-[11px] font-medium text-amber-800">Chờ thẩm tra (pending)</div>
+                    <div className="text-xl font-black text-amber-900 mt-0.5">1</div>
+                    <div className="text-[10px] text-amber-700 mt-1">Đang được Category Admin xác minh</div>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-emerald-50/60 border border-emerald-200/80">
+                    <div className="text-[11px] font-medium text-emerald-800">Đã xử phạt vi phạm</div>
+                    <div className="text-xl font-black text-emerald-900 mt-0.5">1</div>
+                    <div className="text-[10px] text-emerald-700 mt-1">Nội dung vi phạm đã bị gỡ/ẩn</div>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-slate-100 border border-slate-200">
+                    <div className="text-[11px] font-medium text-slate-700">Đã bác bỏ (dismissed)</div>
+                    <div className="text-xl font-black text-slate-800 mt-0.5">1</div>
+                    <div className="text-[10px] text-slate-500 mt-1">Không có dấu hiệu vi phạm điều khoản</div>
+                  </div>
+                </div>
+
+                {/* Danh sách 3 báo cáo mẫu của người dùng */}
+                <div className="space-y-3">
+                  {/* Báo cáo 1 */}
+                  <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs space-y-2.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-rose-100 text-rose-800">
+                          Địa điểm (place)
+                        </span>
+                        <h4 className="text-xs sm:text-sm font-bold text-slate-900">
+                          Quán Bún Bò Huế Mụ Rớt
+                        </h4>
+                      </div>
+                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                        Đang chờ duyệt
+                      </span>
+                    </div>
+
+                    <div className="text-xs text-slate-700">
+                      <strong>Lý do (#5):</strong> <span className="text-rose-700">Địa điểm đã đóng cửa hoặc chuyển địa chỉ</span>
+                    </div>
+                    <p className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100 italic">
+                      "Quán đã chuyển sang 38 Chi Lăng từ tháng trước, thông tin trên bản đồ đang bị sai lệch gây bất tiện cho du khách."
+                    </p>
+
+                    <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-100">
+                      <span>Mã hồ sơ: #REP-301 • Người nhận: Quản trị viên Danh mục Ẩm thực</span>
+                      <span>Hôm nay, 10:15</span>
+                    </div>
+                  </div>
+
+                  {/* Báo cáo 2: Bị bác bỏ -> Có nút Khiếu nại */}
+                  <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs space-y-2.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-amber-100 text-amber-800">
+                          Bài đánh giá (review)
+                        </span>
+                        <h4 className="text-xs sm:text-sm font-bold text-slate-900">
+                          Đánh giá tại Cơm Hến Đập Đá
+                        </h4>
+                      </div>
+                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700 border border-slate-300">
+                        Đã bác bỏ (Hợp lệ)
+                      </span>
+                    </div>
+
+                    <div className="text-xs text-slate-700">
+                      <strong>Lý do (#2):</strong> <span className="text-rose-700">Thông tin sai sự thật, gây hiểu nhầm</span>
+                    </div>
+                    <p className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100 italic">
+                      "Tài khoản vu khống quán dùng dầu tái chế và đồ ăn ôi thiu không có căn cứ, nghi ngờ là nick ảo của đối thủ cạnh tranh."
+                    </p>
+
+                    <div className="text-[11px] bg-blue-50/80 border border-blue-200 text-blue-950 p-2.5 rounded-lg">
+                      <strong className="text-blue-900">Phản hồi của Category Admin:</strong> Nội dung nhận xét phản ánh cảm nhận khẩu vị cá nhân của thực khách, không phát hiện dấu hiệu vi phạm điều khoản.
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-100">
+                      <span className="text-slate-400">Mã hồ sơ: #REP-298 • 3 ngày trước</span>
+                      <button
+                        onClick={() => {
+                          setReportModalTab("history");
+                          setIsReportModalOpen(true);
+                        }}
+                        className="text-purple-700 hover:text-purple-900 font-bold underline cursor-pointer"
+                      >
+                        Gửi Khiếu Nại Quyết Định (dbo.Appeals) →
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Báo cáo 3 */}
+                  <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs space-y-2.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-rose-100 text-rose-800">
+                          Địa điểm (place)
+                        </span>
+                        <h4 className="text-xs sm:text-sm font-bold text-slate-900">
+                          Quán Cafe Hẻm Cũ Đà Lạt
+                        </h4>
+                      </div>
+                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        Đã xác nhận vi phạm
+                      </span>
+                    </div>
+
+                    <div className="text-xs text-slate-700">
+                      <strong>Lý do (#5):</strong> <span className="text-rose-700">Địa điểm đã đóng cửa hoặc chuyển địa chỉ</span>
+                    </div>
+                    <p className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100 italic">
+                      "Quán đã trả mặt bằng từ 3 tháng trước, hiện tại địa điểm đã đổi thành tiệm tạp hóa."
+                    </p>
+
+                    <div className="text-[11px] bg-emerald-50/80 border border-emerald-200 text-emerald-950 p-2.5 rounded-lg">
+                      <strong className="text-emerald-900">Biện pháp xử lý:</strong> Quản trị viên phụ trách danh mục đã thẩm định thực tế và tạm ẩn địa điểm khỏi bản đồ du lịch.
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-100">
+                      <span>Mã hồ sơ: #REP-295 • Đã hoàn tất</span>
+                      <span>1 tuần trước</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Khối Cẩm nang hướng dẫn: Người dùng report những gì? */}
+                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                      <HelpCircle size={14} className="text-blue-600" />
+                      <span>Quy chuẩn: Người dùng có thể báo cáo những gì?</span>
+                    </h4>
+                    <button
+                      onClick={() => {
+                        setReportModalTab("guide");
+                        setIsReportModalOpen(true);
+                      }}
+                      className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer"
+                    >
+                      Mở cẩm nang đầy đủ →
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                    <div className="bg-white p-3 rounded-xl border border-slate-200/80">
+                      <p className="font-bold text-slate-900 flex items-center gap-1 mb-1">
+                        <MapPin size={12} className="text-rose-600" />
+                        <span>1. Địa điểm (place)</span>
+                      </p>
+                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                        Quán đã đóng cửa, sai tọa độ bản đồ, chặt chém giá hoặc cơ sở giả mạo lừa đảo.
+                      </p>
+                    </div>
+
+                    <div className="bg-white p-3 rounded-xl border border-slate-200/80">
+                      <p className="font-bold text-slate-900 flex items-center gap-1 mb-1">
+                        <MessageSquare size={12} className="text-amber-600" />
+                        <span>2. Bài đánh giá (review)</span>
+                      </p>
+                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                        Đánh giá seeding giả mạo, chửi bới xúc phạm nhân viên, dìm hàng không căn cứ, ảnh phản cảm.
+                      </p>
+                    </div>
+
+                    <div className="bg-white p-3 rounded-xl border border-slate-200/80">
+                      <p className="font-bold text-slate-900 flex items-center gap-1 mb-1">
+                        <FileText size={12} className="text-blue-600" />
+                        <span>3. Bình luận (comment)</span>
+                      </p>
+                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                        Spam đường link rác/cờ bạc, miệt thị vùng miền, quấy rối đe dọa thành viên khác.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
       </main>
+
+      {/* ── REPORT MODAL ── */}
+      {isReportModalOpen && (
+        <ReportModal
+          initialTarget={selectedReportTarget}
+          defaultTab={reportModalTab}
+          onClose={() => setIsReportModalOpen(false)}
+          onSubmittedReport={() => {
+            showToast("Đã gửi báo cáo vi phạm thành công!");
+          }}
+        />
+      )}
 
       {/* ── MODAL: CHỈNH SỬA THÔNG TIN CÁ NHÂN ── */}
       {isEditProfileOpen && (

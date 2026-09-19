@@ -1,278 +1,110 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   X,
   UploadCloud,
   CheckCircle2,
   Trash2,
+  Flag,
+  MessageSquare,
+  MapPin,
+  FileText,
+  ShieldCheck,
+  Send,
+  HelpCircle,
+  History,
+  AlertTriangle,
 } from "lucide-react";
+import { DB_REPORT_REASONS, ReportReason } from "./adminData";
 
-/* ── CSS STYLES ───────────────────────────────────────────────────────────── */
-const STYLE = `
-  .rm-overlay {
-    position: fixed; inset: 0; z-index: 9999;
-    background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(8px);
-    display: flex; align-items: center; justify-content: center;
-    padding: 20px;
-    animation: rm-fade-in .2s ease-out;
-  }
-  @keyframes rm-fade-in { from { opacity: 0 } to { opacity: 1 } }
+/* ── KIỂU DỮ LIỆU ĐỐI TƯỢNG BỊ REPORT (dbo.Reports.TargetType) ── */
+export type ReportTargetType = "place" | "review" | "comment";
 
-  .rm-modal {
-    background: #ffffff;
-    border-radius: 20px;
-    width: 100%; max-width: 540px;
-    max-height: 90vh;
-    display: flex; flex-direction: column;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
-    animation: rm-slide-up .25s cubic-bezier(0.16, 1, 0.3, 1);
-    overflow: hidden;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  }
-  @keyframes rm-slide-up {
-    from { opacity: 0; transform: translateY(18px) scale(0.98); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-  }
+export interface ReportTargetInfo {
+  targetType: ReportTargetType;
+  targetId?: number;
+  targetTitle: string;
+  targetSubtitle?: string;
+  targetContent?: string;
+  targetAuthor?: string;
+  targetRating?: number;
+  province?: string;
+  category?: string;
+}
 
-  /* Header */
-  .rm-header {
-    padding: 22px 26px 18px;
-    display: flex; align-items: flex-start; justify-content: space-between;
-    border-bottom: 1px solid #F1F5F9;
-  }
-  .rm-header-text { flex: 1; min-width: 0; padding-right: 16px; }
-  .rm-badge {
-    display: inline-flex; align-items: center; gap: 5px;
-    font-size: 11px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.05em; color: #EA580C; background: #FFF7ED;
-    padding: 3px 9px; border-radius: 999px; margin-bottom: 6px;
-  }
-  .rm-title {
-    font-size: 18px; font-weight: 800; color: #0F172A;
-    letter-spacing: -0.02em; line-height: 1.3; margin: 0 0 4px 0;
-  }
-  .rm-sub {
-    font-size: 13px; color: #64748B; margin: 0; line-height: 1.4;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .rm-close {
-    width: 34px; height: 34px; border-radius: 50%;
-    border: 1px solid #E2E8F0; background: #F8FAFC;
-    color: #64748B; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.15s ease; flex-shrink: 0;
-  }
-  .rm-close:hover { background: #E2E8F0; color: #0F172A; }
+export interface ReportModalProps {
+  placeName?: string;
+  initialTarget?: ReportTargetInfo;
+  onClose: () => void;
+  onSubmittedReport?: (newReport: any) => void;
+  defaultTab?: "form" | "guide" | "history";
+}
 
-  /* Body Scrollable */
-  .rm-body {
-    padding: 22px 26px;
-    overflow-y: auto;
-    display: flex; flex-direction: column; gap: 20px;
-  }
-  .rm-body::-webkit-scrollbar { width: 6px; }
-  .rm-body::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+interface SubmittedUserReport {
+  id: number;
+  targetType: ReportTargetType;
+  targetTitle: string;
+  reasonContent: string;
+  description: string;
+  submittedAt: string;
+  status: "pending" | "resolved";
+  result?: "violation_confirmed" | "dismissed";
+  resolutionNote?: string;
+}
 
-  .rm-section-label {
-    font-size: 12px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.04em; color: #475569; margin-bottom: 10px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-
-  /* Reason Grid */
-  .rm-grid {
-    display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
-  }
-  @media (max-width: 520px) {
-    .rm-grid { grid-template-columns: 1fr; }
-  }
-
-  .rm-card {
-    display: flex; flex-direction: column; justify-content: center;
-    padding: 13px 15px; border-radius: 12px;
-    border: 1.5px solid #E2E8F0; background: #FFFFFF;
-    cursor: pointer; transition: all 0.18s ease; text-align: left;
-    position: relative; min-height: 72px;
-  }
-  .rm-card:hover {
-    border-color: #94A3B8; background: #F8FAFC;
-  }
-  .rm-card.active {
-    border-color: #064E3B; background: #ECFDF5;
-    box-shadow: 0 0 0 1px #064E3B;
-  }
-  .rm-card-title {
-    font-size: 13px; font-weight: 700; color: #1E293B;
-    line-height: 1.35; margin-bottom: 3px;
-  }
-  .rm-card.active .rm-card-title { color: #064E3B; }
-  .rm-card-desc {
-    font-size: 11.5px; color: #64748B; line-height: 1.4;
-  }
-  .rm-card.active .rm-card-desc { color: #047857; }
-
-  /* Textarea */
-  .rm-textarea-wrap { position: relative; }
-  .rm-textarea {
-    width: 100%; border: 1.5px solid #E2E8F0; border-radius: 12px;
-    padding: 12px 14px 28px; font-size: 13px; font-family: inherit;
-    color: #0F172A; resize: none; min-height: 90px;
-    outline: none; transition: border-color 0.15s, box-shadow 0.15s;
-    line-height: 1.55; box-sizing: border-box; background: #FAFAFA;
-  }
-  .rm-textarea:focus {
-    background: #FFFFFF; border-color: #064E3B;
-    box-shadow: 0 0 0 3px rgba(6, 78, 59, 0.1);
-  }
-  .rm-textarea::placeholder { color: #94A3B8; }
-  .rm-char-count {
-    position: absolute; right: 12px; bottom: 8px;
-    font-size: 11px; color: #94A3B8;
-  }
-
-  /* Upload */
-  .rm-dropzone {
-    border: 1.5px dashed #CBD5E1; border-radius: 12px;
-    padding: 14px 16px; background: #F8FAFC;
-    cursor: pointer; transition: all 0.15s ease;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .rm-dropzone:hover { border-color: #064E3B; background: #F0FDF4; }
-  .rm-drop-left { display: flex; align-items: center; gap: 12px; }
-  .rm-drop-icon {
-    width: 36px; height: 36px; border-radius: 10px;
-    background: #E2E8F0; color: #475569;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .rm-dropzone:hover .rm-drop-icon { background: #DCFCE7; color: #064E3B; }
-  .rm-drop-text strong { display: block; font-size: 13px; font-weight: 600; color: #1E293B; }
-  .rm-drop-text span { font-size: 11px; color: #64748B; }
-
-  .rm-file-chip {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 14px; border-radius: 10px; background: #ECFDF5;
-    border: 1px solid #A7F3D0;
-  }
-  .rm-file-name {
-    font-size: 13px; font-weight: 600; color: #064E3B;
-    display: flex; align-items: center; gap: 8px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 360px;
-  }
-  .rm-file-remove {
-    background: none; border: none; color: #059669;
-    cursor: pointer; padding: 4px; display: flex; align-items: center;
-    border-radius: 6px; transition: background 0.15s;
-  }
-  .rm-file-remove:hover { background: #D1FAE5; color: #DC2626; }
-
-  /* Footer */
-  .rm-footer {
-    padding: 16px 26px 22px;
-    display: flex; gap: 12px; align-items: center;
-    border-top: 1px solid #F1F5F9;
-    background: #FAFAFA;
-  }
-  .rm-btn-cancel {
-    padding: 11px 20px; border-radius: 10px;
-    border: 1.5px solid #CBD5E1; background: #FFFFFF;
-    color: #334155; font-size: 13px; font-weight: 600;
-    cursor: pointer; transition: all 0.15s;
-  }
-  .rm-btn-cancel:hover { background: #F1F5F9; border-color: #94A3B8; }
-  .rm-btn-submit {
-    flex: 1; padding: 11px 24px; border-radius: 10px;
-    border: none; background: #064E3B; color: #FFFFFF;
-    font-size: 13px; font-weight: 700; cursor: pointer;
-    transition: all 0.15s ease; box-shadow: 0 4px 12px rgba(6, 78, 59, 0.25);
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-  }
-  .rm-btn-submit:hover:not(:disabled) {
-    background: #04382A; transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(6, 78, 59, 0.35);
-  }
-  .rm-btn-submit:disabled {
-    background: #94A3B8; box-shadow: none; cursor: not-allowed; opacity: 0.6;
-  }
-
-  /* Success View */
-  .rm-success-box {
-    padding: 48px 32px 40px; text-align: center;
-    display: flex; flex-direction: column; align-items: center;
-  }
-  .rm-success-circle {
-    width: 64px; height: 64px; border-radius: 50%;
-    background: #ECFDF5; color: #059669;
-    display: flex; align-items: center; justify-content: center;
-    margin-bottom: 20px;
-    animation: rm-pop .3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-  @keyframes rm-pop {
-    from { transform: scale(0.5); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-  }
-  .rm-success-title {
-    font-size: 20px; font-weight: 800; color: #0F172A; margin: 0 0 8px 0;
-  }
-  .rm-success-desc {
-    font-size: 13px; color: #64748B; line-height: 1.6; max-width: 380px; margin: 0 0 24px 0;
-  }
-  .rm-success-btn {
-    padding: 10px 32px; border-radius: 10px;
-    border: none; background: #064E3B; color: #fff;
-    font-size: 13px; font-weight: 700; cursor: pointer;
-    transition: opacity 0.15s;
-  }
-  .rm-success-btn:hover { opacity: 0.9; }
-`;
-
-const REASONS = [
+// Dữ liệu mẫu lịch sử báo cáo người dùng đã gửi
+const INITIAL_MY_REPORTS: SubmittedUserReport[] = [
   {
-    id: "closed",
-    title: "Đã đóng cửa / Dừng hoạt động",
-    desc: "Địa điểm đã dừng kinh doanh hoặc chuyển đi",
+    id: 301,
+    targetType: "place",
+    targetTitle: "Quán Bún Bò Huế Mụ Rớt",
+    reasonContent: "Địa điểm đã đóng cửa hoặc chuyển địa chỉ",
+    description: "Quán đã chuyển sang địa chỉ mới từ tháng trước, thông tin trên bản đồ đang bị sai lệch.",
+    submittedAt: "Hôm nay, 10:15",
+    status: "pending",
   },
   {
-    id: "location",
-    title: "Sai vị trí hoặc sai địa chỉ",
-    desc: "Ghim bản đồ hoặc tên đường chưa chính xác",
-  },
-  {
-    id: "hours",
-    title: "Sai giờ mở cửa hoặc giá",
-    desc: "Thời gian phục vụ hoặc mức giá đã thay đổi",
-  },
-  {
-    id: "duplicate",
-    title: "Trùng lặp địa điểm",
-    desc: "Đã có một trang tương tự trên LangThang",
-  },
-  {
-    id: "content",
-    title: "Nội dung hoặc ảnh không chuẩn",
-    desc: "Hình ảnh sai quán hoặc thông tin không phù hợp",
-  },
-  {
-    id: "other",
-    title: "Đề xuất cập nhật khác",
-    desc: "Bổ sung số điện thoại, menu hoặc tiện ích",
+    id: 298,
+    targetType: "review",
+    targetTitle: "Đánh giá tại Cơm Hến Đập Đá",
+    reasonContent: "Thông tin sai sự thật, gây hiểu nhầm",
+    description: "Tài khoản vu khống quán dùng đồ ăn ôi thiu không có căn cứ.",
+    submittedAt: "3 ngày trước",
+    status: "resolved",
+    result: "dismissed",
+    resolutionNote: "Nội dung phản ánh khẩu vị cá nhân, không phát hiện dấu hiệu vi phạm điều khoản.",
   },
 ];
 
-interface ReportModalProps {
-  placeName: string;
-  onClose: () => void;
-}
+export default function ReportModal({
+  placeName,
+  initialTarget,
+  onClose,
+  onSubmittedReport,
+  defaultTab = "form",
+}: ReportModalProps) {
+  const [modalView, setModalView] = useState<"form" | "guide" | "history">(defaultTab);
 
-export default function ReportModal({ placeName, onClose }: ReportModalProps) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [detail, setDetail] = useState("");
+  // Xác định thông tin đối tượng đang báo cáo từ props
+  const targetInfo: ReportTargetInfo = initialTarget || {
+    targetType: "place",
+    targetTitle: placeName || "Quán ăn / Địa điểm ẩm thực",
+    targetSubtitle: "Cơ sở ẩm thực & du lịch",
+  };
+
+  const targetType = targetInfo.targetType;
+
+  // State form
+  const [selectedReasonId, setSelectedReasonId] = useState<number | null>(null);
+  const [description, setDescription] = useState("");
   const [fileName, setFileName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [submittedReportId, setSubmittedReportId] = useState<number | null>(null);
+  const [myReports, setMyReports] = useState<SubmittedUserReport[]>(INITIAL_MY_REPORTS);
+
   const fileRef = useRef<HTMLInputElement>(null);
 
-  /* Close on Escape */
+  // Close on Escape key
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -281,197 +113,852 @@ export default function ReportModal({ placeName, onClose }: ReportModalProps) {
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
-  /* Prevent body scrolling */
+  // Prevent background body scrolling
   useEffect(() => {
+    const orig = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = orig;
     };
   }, []);
 
-  const handleSubmit = () => {
-    if (!selectedId) return;
+  // Tiêu đề modal tương ứng theo từng ngữ cảnh
+  const getModalTitle = () => {
+    switch (targetType) {
+      case "place":
+        return "Báo cáo Quán ăn / Địa điểm";
+      case "review":
+        return "Báo cáo Đánh giá vi phạm";
+      case "comment":
+        return targetInfo.targetTitle?.toLowerCase().includes("bài viết") ||
+          targetInfo.targetSubtitle?.toLowerCase().includes("bài viết")
+          ? "Báo cáo Bình luận vi phạm"
+          : "Báo cáo Vi phạm";
+      default:
+        return "Báo cáo Vi phạm";
+    }
+  };
+
+  const getTargetTypeBadge = () => {
+    switch (targetType) {
+      case "place":
+        return { label: "Quán ăn / Địa điểm", icon: MapPin, bg: "bg-emerald-50", text: "text-emerald-800", border: "border-emerald-200" };
+      case "review":
+        return { label: "Thẻ đánh giá", icon: MessageSquare, bg: "bg-amber-50", text: "text-amber-800", border: "border-amber-200" };
+      case "comment":
+        return { label: "Bình luận", icon: FileText, bg: "bg-blue-50", text: "text-blue-800", border: "border-blue-200" };
+      default:
+        return { label: "Nội dung", icon: Flag, bg: "bg-slate-100", text: "text-slate-800", border: "border-slate-200" };
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedReasonId) return;
+
     setIsSubmitting(true);
+    const chosenReason = DB_REPORT_REASONS.find((r) => r.id === selectedReasonId);
+    const newId = 300 + Math.floor(Math.random() * 900);
+
     setTimeout(() => {
       setIsSubmitting(false);
-      setSubmitted(true);
+      setSubmittedReportId(newId);
+
+      const newReportEntry: SubmittedUserReport = {
+        id: newId,
+        targetType: targetType,
+        targetTitle: targetInfo.targetTitle,
+        reasonContent: chosenReason?.content || "Vi phạm quy định",
+        description: description.trim() || "Người dùng không để lại mô tả thêm.",
+        submittedAt: "Vừa xong",
+        status: "pending",
+      };
+
+      setMyReports((prev) => [newReportEntry, ...prev]);
+      if (onSubmittedReport) {
+        onSubmittedReport(newReportEntry);
+      }
     }, 450);
   };
 
-  return (
-    <>
-      <style>{STYLE}</style>
+  const badgeInfo = getTargetTypeBadge();
+  const BadgeIcon = badgeInfo.icon;
+
+  const modalContent = (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 999999,
+        backgroundColor: "rgba(15, 23, 42, 0.65)",
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "16px",
+        fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div
-        className="rm-overlay"
-        onClick={(e) => {
-          if (e.target === e.currentTarget) onClose();
+        style={{
+          backgroundColor: "#ffffff",
+          borderRadius: "24px",
+          width: "100%",
+          maxWidth: "540px",
+          maxHeight: "90vh",
+          display: "flex",
+          flexDirection: "column",
+          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+          border: "1px solid #E2E8F0",
+          overflow: "hidden",
         }}
+        role="dialog"
+        aria-modal="true"
       >
+        {/* ── HEADER MODAL ── */}
         <div
-          className="rm-modal"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="rm-modal-title"
+          style={{
+            padding: "18px 24px",
+            borderBottom: "1px solid #F1F5F9",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            backgroundColor: "#FAFAFA",
+          }}
         >
-          {submitted ? (
-            <div className="rm-success-box">
-              <div className="rm-success-circle">
-                <CheckCircle2 size={36} strokeWidth={2.2} />
-              </div>
-              <h4 className="rm-success-title">Đã tiếp nhận đóng góp!</h4>
-              <p className="rm-success-desc">
-                Cảm ơn bạn đã hỗ trợ cập nhật thông tin cho{" "}
-                <strong style={{ color: "#0F172A" }}>"{placeName}"</strong>. Đội
-                ngũ kiểm duyệt sẽ xác minh và điều chỉnh dữ liệu sớm nhất.
-              </p>
-              <button className="rm-success-btn" onClick={onClose}>
-                Hoàn tất
-              </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div
+              style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "12px",
+                backgroundColor: "#FFE4E6",
+                border: "1px solid #FECDD3",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#E11D48",
+                flexShrink: 0,
+              }}
+            >
+              <Flag size={18} fill="#E11D48" />
             </div>
-          ) : (
-            <>
-              {/* Header */}
-              <div className="rm-header">
-                <div className="rm-header-text">
-                  <div className="rm-badge">Đóng góp cộng đồng</div>
-                  <h3 className="rm-title" id="rm-modal-title">
-                    Báo cáo & Đề xuất chỉnh sửa
-                  </h3>
-                  <p className="rm-sub">
-                    Góp ý về địa điểm: <strong>{placeName}</strong>
-                  </p>
-                </div>
-                <button
-                  className="rm-close"
-                  onClick={onClose}
-                  aria-label="Đóng cửa sổ"
+            <div>
+              <h3
+                style={{
+                  fontSize: "15px",
+                  fontWeight: 700,
+                  color: "#0F172A",
+                  margin: 0,
+                  lineHeight: "1.3",
+                }}
+              >
+                {modalView === "guide"
+                  ? "Quy chuẩn báo cáo vi phạm"
+                  : modalView === "history"
+                  ? "Lịch sử báo cáo của bạn"
+                  : getModalTitle()}
+              </h3>
+              <p
+                style={{
+                  fontSize: "12px",
+                  color: "#64748B",
+                  margin: "3px 0 0 0",
+                  lineHeight: "1.2",
+                }}
+              >
+                Gửi phản hồi ẩn danh tới Quản trị viên để kiểm duyệt
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {modalView !== "form" && (
+              <button
+                type="button"
+                onClick={() => setModalView("form")}
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  color: "#E11D48",
+                  backgroundColor: "#FFF1F2",
+                  border: "none",
+                  padding: "6px 12px",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                }}
+              >
+                ← Quay lại form
+              </button>
+            )}
+
+            <button
+              onClick={onClose}
+              style={{
+                width: "32px",
+                height: "32px",
+                borderRadius: "50%",
+                border: "1px solid #E2E8F0",
+                backgroundColor: "#FFFFFF",
+                color: "#64748B",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                transition: "all 0.15s",
+              }}
+              aria-label="Đóng"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* ── THÀNH CÔNG ── */}
+        {submittedReportId ? (
+          <div
+            style={{
+              padding: "36px 24px",
+              textAlign: "center",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "16px",
+            }}
+          >
+            <div
+              style={{
+                width: "60px",
+                height: "60px",
+                borderRadius: "50%",
+                backgroundColor: "#DCFCE7",
+                color: "#16A34A",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <CheckCircle2 size={36} strokeWidth={2.2} />
+            </div>
+
+            <div>
+              <h4 style={{ fontSize: "17px", fontWeight: 700, color: "#0F172A", margin: "0 0 4px 0" }}>
+                Đã tiếp nhận báo cáo của bạn
+              </h4>
+              <p style={{ fontSize: "13px", color: "#64748B", margin: 0 }}>
+                Mã theo dõi: <strong style={{ color: "#16A34A" }}>#REP-{submittedReportId}</strong>
+              </p>
+            </div>
+
+            <div
+              style={{
+                padding: "16px",
+                borderRadius: "16px",
+                backgroundColor: "#F8FAFC",
+                border: "1px solid #E2E8F0",
+                textAlign: "left",
+                fontSize: "12px",
+                color: "#334155",
+                lineHeight: "1.6",
+                maxWidth: "440px",
+                width: "100%",
+              }}
+            >
+              <p style={{ margin: "0 0 6px 0", fontWeight: 600, color: "#0F172A" }}>
+                • Đối tượng: {targetInfo.targetTitle}
+              </p>
+              <p style={{ margin: 0, color: "#64748B" }}>
+                Cảm ơn bạn đã hỗ trợ giữ gìn môi trường thông tin du lịch trung thực và văn minh. Báo cáo sẽ được Quản trị viên đối chiếu và xử lý trong vòng 24 giờ.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                padding: "10px 24px",
+                borderRadius: "12px",
+                fontSize: "13px",
+                fontWeight: 700,
+                color: "#FFFFFF",
+                backgroundColor: "#0F172A",
+                border: "none",
+                cursor: "pointer",
+                marginTop: "8px",
+              }}
+            >
+              Đã hiểu &amp; Đóng
+            </button>
+          </div>
+        ) : modalView === "guide" ? (
+          /* ── HƯỚNG DẪN ── */
+          <div style={{ padding: "20px 24px", overflowY: "auto", maxHeight: "65vh" }}>
+            <div
+              style={{
+                padding: "14px 16px",
+                borderRadius: "14px",
+                backgroundColor: "#EFF6FF",
+                border: "1px solid #BFDBFE",
+                color: "#1E3A8A",
+                fontSize: "12px",
+                lineHeight: "1.6",
+                marginBottom: "16px",
+              }}
+            >
+              <strong style={{ display: "block", marginBottom: "4px" }}>Nguyên tắc tiếp nhận báo cáo</strong>
+              Mọi thành viên đều có quyền báo cáo các nội dung vi phạm tiêu chuẩn cộng đồng, bao gồm thông tin quán ăn sai lệch, đánh giá bôi nhọ hoặc bình luận quấy rối.
+            </div>
+
+            <h5 style={{ fontSize: "12px", fontWeight: 700, color: "#0F172A", margin: "0 0 10px 0" }}>
+              Các lý do vi phạm phổ biến:
+            </h5>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
+              {DB_REPORT_REASONS.map((r) => (
+                <div
+                  key={r.id}
+                  style={{
+                    padding: "10px 14px",
+                    borderRadius: "12px",
+                    border: "1px solid #F1F5F9",
+                    backgroundColor: "#F8FAFC",
+                    fontSize: "12px",
+                  }}
                 >
-                  <X size={16} strokeWidth={2.2} />
-                </button>
-              </div>
-
-              {/* Body */}
-              <div className="rm-body">
-                {/* 1. Category Selection */}
-                <div>
-                  <div className="rm-section-label">
-                    <span>1. Vấn đề bạn nhận thấy *</span>
-                  </div>
-                  <div className="rm-grid">
-                    {REASONS.map((r) => {
-                      const isActive = selectedId === r.id;
-                      return (
-                        <button
-                          key={r.id}
-                          type="button"
-                          className={`rm-card${isActive ? " active" : ""}`}
-                          onClick={() => setSelectedId(r.id)}
-                        >
-                          <div className="rm-card-title">{r.title}</div>
-                          <div className="rm-card-desc">{r.desc}</div>
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <strong style={{ color: "#0F172A" }}>• {r.content}:</strong>{" "}
+                  <span style={{ color: "#64748B" }}>{r.desc}</span>
                 </div>
+              ))}
+            </div>
 
-                {/* 2. Text description */}
-                <div>
-                  <div className="rm-section-label">
-                    <span>2. Chi tiết cần cập nhật</span>
-                    <span style={{ fontWeight: 400, color: "#94A3B8" }}>
-                      Tùy chọn
+            <button
+              onClick={() => setModalView("form")}
+              style={{
+                width: "100%",
+                padding: "10px",
+                textAlign: "center",
+                fontSize: "13px",
+                fontWeight: 700,
+                color: "#FFFFFF",
+                backgroundColor: "#E11D48",
+                borderRadius: "12px",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              Tiến hành gửi báo cáo →
+            </button>
+          </div>
+        ) : modalView === "history" ? (
+          /* ── LỊCH SỬ BÁO CÁO ── */
+          <div style={{ padding: "20px 24px", overflowY: "auto", maxHeight: "65vh" }}>
+            <h5
+              style={{
+                fontSize: "11px",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                color: "#64748B",
+                margin: "0 0 12px 0",
+              }}
+            >
+              Báo cáo bạn đã gửi gần đây ({myReports.length})
+            </h5>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {myReports.map((rep) => (
+                <div
+                  key={rep.id}
+                  style={{
+                    padding: "14px 16px",
+                    borderRadius: "14px",
+                    border: "1px solid #E2E8F0",
+                    backgroundColor: "#F8FAFC",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "6px",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: "13px", fontWeight: 700, color: "#0F172A" }}>
+                      {rep.targetTitle}
                     </span>
-                  </div>
-                  <div className="rm-textarea-wrap">
-                    <textarea
-                      className="rm-textarea"
-                      placeholder="Mô tả cụ thể thông tin chính xác (ví dụ: số nhà mới, giờ phục vụ thực tế, món đặc trưng...)"
-                      value={detail}
-                      maxLength={500}
-                      onChange={(e) => setDetail(e.target.value)}
-                    />
-                    <span className="rm-char-count">{detail.length}/500</span>
-                  </div>
-                </div>
-
-                {/* 3. Photo proof upload */}
-                <div>
-                  <div className="rm-section-label">
-                    <span>3. Ảnh minh chứng thực tế</span>
-                    <span style={{ fontWeight: 400, color: "#94A3B8" }}>
-                      Tùy chọn
-                    </span>
-                  </div>
-                  <input
-                    ref={fileRef}
-                    type="file"
-                    accept="image/*"
-                    style={{ display: "none" }}
-                    onChange={(e) =>
-                      setFileName(e.target.files?.[0]?.name ?? "")
-                    }
-                  />
-
-                  {fileName ? (
-                    <div className="rm-file-chip">
-                      <div className="rm-file-name">
-                        <UploadCloud size={16} />
-                        <span>{fileName}</span>
-                      </div>
-                      <button
-                        className="rm-file-remove"
-                        type="button"
-                        onClick={() => {
-                          setFileName("");
-                          if (fileRef.current) fileRef.current.value = "";
-                        }}
-                        title="Xóa ảnh"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  ) : (
-                    <div
-                      className="rm-dropzone"
-                      onClick={() => fileRef.current?.click()}
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        fontWeight: 700,
+                        padding: "3px 8px",
+                        borderRadius: "20px",
+                        backgroundColor: rep.status === "pending" ? "#FEF3C7" : "#DCFCE7",
+                        color: rep.status === "pending" ? "#92400E" : "#166534",
+                      }}
                     >
-                      <div className="rm-drop-left">
-                        <div className="rm-drop-icon">
-                          <UploadCloud size={18} />
-                        </div>
-                        <div className="rm-drop-text">
-                          <strong>Tải lên hình ảnh bảng hiệu, menu...</strong>
-                          <span>Hỗ trợ định dạng JPG, PNG (tối đa 10 MB)</span>
-                        </div>
-                      </div>
-                    </div>
+                      {rep.status === "pending" ? "Đang thẩm định" : "Đã xử lý"}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: "12px", color: "#BE123C", fontWeight: 600, margin: 0 }}>
+                    Lý do: {rep.reasonContent}
+                  </p>
+                  <p
+                    style={{
+                      fontSize: "12px",
+                      color: "#475569",
+                      fontStyle: "italic",
+                      backgroundColor: "#FFFFFF",
+                      padding: "8px 12px",
+                      borderRadius: "8px",
+                      border: "1px solid #F1F5F9",
+                      margin: 0,
+                    }}
+                  >
+                    "{rep.description}"
+                  </p>
+                  <span style={{ fontSize: "11px", color: "#94A3B8" }}>Gửi lúc: {rep.submittedAt}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          /* ── FORM BÁO CÁO CHÍNH (ĐẸP, THOÁNG, CHUẨN THIẾT KẾ) ── */
+          <form
+            onSubmit={handleSubmit}
+            style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, margin: 0 }}
+          >
+            <div
+              style={{
+                padding: "20px 24px",
+                overflowY: "auto",
+                maxHeight: "65vh",
+                display: "flex",
+                flexDirection: "column",
+                gap: "18px",
+              }}
+            >
+              {/* Thẻ tóm tắt đối tượng đang báo cáo */}
+              <div
+                style={{
+                  padding: "14px 16px",
+                  borderRadius: "16px",
+                  backgroundColor: "#F8FAFC",
+                  border: "1px solid #E2E8F0",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "6px",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      padding: "3px 8px",
+                      borderRadius: "6px",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      backgroundColor: targetType === "place" ? "#ECFDF5" : targetType === "review" ? "#FEF3C7" : "#EFF6FF",
+                      color: targetType === "place" ? "#065F46" : targetType === "review" ? "#92400E" : "#1E40AF",
+                      border: `1px solid ${targetType === "place" ? "#A7F3D0" : targetType === "review" ? "#FDE68A" : "#BFDBFE"}`,
+                    }}
+                  >
+                    <BadgeIcon size={12} />
+                    <span>{badgeInfo.label}</span>
+                  </div>
+
+                  {targetInfo.targetRating && (
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        color: "#B45309",
+                        backgroundColor: "#FEF3C7",
+                        padding: "2px 8px",
+                        borderRadius: "6px",
+                      }}
+                    >
+                      ★ {targetInfo.targetRating}.0
+                    </span>
                   )}
                 </div>
+
+                <div>
+                  <h4
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: 700,
+                      color: "#0F172A",
+                      margin: "2px 0 0 0",
+                      lineHeight: "1.4",
+                    }}
+                  >
+                    {targetInfo.targetTitle}
+                  </h4>
+                  {targetInfo.targetSubtitle && (
+                    <p style={{ fontSize: "12px", color: "#64748B", margin: "2px 0 0 0" }}>
+                      {targetInfo.targetSubtitle}
+                    </p>
+                  )}
+                </div>
+
+                {targetInfo.targetContent && (
+                  <p
+                    style={{
+                      fontSize: "12px",
+                      color: "#334155",
+                      fontStyle: "italic",
+                      backgroundColor: "#FFFFFF",
+                      padding: "8px 12px",
+                      borderRadius: "8px",
+                      border: "1px solid #E2E8F0",
+                      margin: "4px 0 0 0",
+                      lineHeight: "1.5",
+                    }}
+                  >
+                    "{targetInfo.targetContent}"
+                  </p>
+                )}
               </div>
 
-              {/* Footer */}
-              <div className="rm-footer">
+              {/* Danh sách lý do vi phạm */}
+              <div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <label
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      color: "#0F172A",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                      margin: 0,
+                    }}
+                  >
+                    <span>Chọn lý do vi phạm</span>
+                    <span style={{ color: "#E11D48" }}>*</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setModalView("guide")}
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      color: "#2563EB",
+                      background: "none",
+                      border: "none",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "3px",
+                      cursor: "pointer",
+                      padding: 0,
+                    }}
+                  >
+                    <HelpCircle size={12} />
+                    <span>Xem quy chuẩn</span>
+                  </button>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "7px" }}>
+                  {DB_REPORT_REASONS.map((r) => {
+                    const isSelected = selectedReasonId === r.id;
+                    return (
+                      <div
+                        key={r.id}
+                        onClick={() => setSelectedReasonId(r.id)}
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: "12px",
+                          padding: "10px 14px",
+                          borderRadius: "14px",
+                          border: `1.5px solid ${isSelected ? "#E11D48" : "#E2E8F0"}`,
+                          backgroundColor: isSelected ? "#FFF1F2" : "#FFFFFF",
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        {/* Custom Radio Circle */}
+                        <div
+                          style={{
+                            width: "18px",
+                            height: "18px",
+                            borderRadius: "50%",
+                            border: `2px solid ${isSelected ? "#E11D48" : "#CBD5E1"}`,
+                            backgroundColor: "#FFFFFF",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                            marginTop: "2px",
+                          }}
+                        >
+                          {isSelected && (
+                            <div
+                              style={{
+                                width: "9px",
+                                height: "9px",
+                                borderRadius: "50%",
+                                backgroundColor: "#E11D48",
+                              }}
+                            />
+                          )}
+                        </div>
+
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <span
+                            style={{
+                              fontSize: "13px",
+                              fontWeight: 700,
+                              color: isSelected ? "#9F1239" : "#1E293B",
+                              display: "block",
+                              lineHeight: "1.3",
+                            }}
+                          >
+                            {r.content}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              color: isSelected ? "#881337" : "#64748B",
+                              display: "block",
+                              marginTop: "3px",
+                              lineHeight: "1.4",
+                            }}
+                          >
+                            {r.desc}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Ô nhập mô tả chi tiết */}
+              <div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: "6px",
+                  }}
+                >
+                  <label style={{ fontSize: "12px", fontWeight: 700, color: "#0F172A", margin: 0 }}>
+                    Mô tả chi tiết vi phạm
+                  </label>
+                  <span style={{ fontSize: "11px", color: "#94A3B8" }}>
+                    {description.length}/500 ký tự
+                  </span>
+                </div>
+                <textarea
+                  rows={3}
+                  maxLength={500}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Vui lòng cung cấp thêm thông tin, dẫn chứng hoặc thời gian xảy ra để Quản trị viên dễ dàng xác minh..."
+                  style={{
+                    width: "100%",
+                    boxSizing: "border-box",
+                    fontSize: "12px",
+                    padding: "10px 14px",
+                    borderRadius: "14px",
+                    border: "1px solid #CBD5E1",
+                    outline: "none",
+                    resize: "none",
+                    color: "#0F172A",
+                    backgroundColor: "#FFFFFF",
+                    fontFamily: "inherit",
+                    lineHeight: "1.5",
+                  }}
+                />
+              </div>
+
+              {/* Đính kèm ảnh bằng chứng */}
+              <div>
+                <span
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    color: "#0F172A",
+                    display: "block",
+                    marginBottom: "6px",
+                  }}
+                >
+                  Ảnh bằng chứng (tùy chọn)
+                </span>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={(e) => setFileName(e.target.files?.[0]?.name ?? "")}
+                />
+
+                {fileName ? (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "8px 12px",
+                      backgroundColor: "#FFF1F2",
+                      borderRadius: "12px",
+                      border: "1px solid #FECDD3",
+                      fontSize: "12px",
+                      color: "#9F1239",
+                    }}
+                  >
+                    <span style={{ display: "flex", alignItems: "center", gap: "8px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <UploadCloud size={14} color="#E11D48" />
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{fileName}</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFileName("");
+                        if (fileRef.current) fileRef.current.value = "";
+                      }}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: "#E11D48",
+                        cursor: "pointer",
+                        padding: "2px",
+                        display: "flex",
+                      }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    style={{
+                      width: "100%",
+                      border: "1.5px dashed #CBD5E1",
+                      borderRadius: "12px",
+                      padding: "10px",
+                      textAlign: "center",
+                      fontSize: "12px",
+                      color: "#64748B",
+                      backgroundColor: "#F8FAFC",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px",
+                    }}
+                  >
+                    <UploadCloud size={15} color="#94A3B8" />
+                    <span>Tải lên ảnh chụp màn hình vi phạm</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Cam kết bảo mật ẩn danh */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "10px 14px",
+                  borderRadius: "12px",
+                  backgroundColor: "#F0FDF4",
+                  border: "1px solid #DCFCE7",
+                  fontSize: "11px",
+                  color: "#166534",
+                  fontWeight: 500,
+                }}
+              >
+                <ShieldCheck size={16} color="#16A34A" style={{ flexShrink: 0 }} />
+                <span>Báo cáo của bạn được gửi ẩn danh và bảo mật tuyệt đối.</span>
+              </div>
+            </div>
+
+            {/* ── FOOTER HÀNH ĐỘNG ── */}
+            <div
+              style={{
+                padding: "14px 24px",
+                borderTop: "1px solid #F1F5F9",
+                backgroundColor: "#FAFAFA",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setModalView("history")}
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  color: "#64748B",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: "6px 0",
+                }}
+              >
+                Lịch sử ({myReports.length})
+              </button>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <button
                   type="button"
-                  className="rm-btn-cancel"
                   onClick={onClose}
+                  style={{
+                    padding: "8px 16px",
+                    borderRadius: "12px",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: "#475569",
+                    backgroundColor: "#F1F5F9",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
                 >
                   Hủy bỏ
                 </button>
+
                 <button
-                  type="button"
-                  className="rm-btn-submit"
-                  onClick={handleSubmit}
-                  disabled={!selectedId || isSubmitting}
+                  type="submit"
+                  disabled={!selectedReasonId || isSubmitting}
+                  style={{
+                    padding: "9px 20px",
+                    borderRadius: "12px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    color: "#FFFFFF",
+                    backgroundColor: selectedReasonId && !isSubmitting ? "#E11D48" : "#E2E8F0",
+                    border: "none",
+                    cursor: selectedReasonId && !isSubmitting ? "pointer" : "not-allowed",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    boxShadow: selectedReasonId && !isSubmitting ? "0 4px 12px rgba(225, 29, 72, 0.25)" : "none",
+                    transition: "all 0.15s",
+                  }}
                 >
-                  {isSubmitting ? "Đang gửi..." : "Gửi thông tin"}
+                  <Send size={13} />
+                  <span>{isSubmitting ? "Đang gửi..." : "Gửi Báo Cáo"}</span>
                 </button>
               </div>
-            </>
-          )}
-        </div>
+            </div>
+          </form>
+        )}
       </div>
-    </>
+    </div>
   );
+
+  return typeof document !== "undefined" ? createPortal(modalContent, document.body) : modalContent;
 }

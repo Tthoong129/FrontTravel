@@ -11,6 +11,8 @@ import ChatPage from "./ChatPage";
 import FloatingChatWidget from "./FloatingChatWidget";
 import AuthModal from "./AuthModal";
 import ProposePlaceModal from "./ProposePlaceModal";
+import AdminModeratorPortal from "./AdminModeratorPortal";
+import ReportModal, { ReportTargetInfo } from "./ReportModal";
 import {
   Place,
   initialUserProfile,
@@ -47,8 +49,11 @@ import {
   Sparkles,
   FileText,
   Shield,
+  ShieldAlert,
+  ShieldCheck,
   Users,
   MessageCircle,
+  Flag,
 } from "lucide-react";
 
 const HERO_IMG =
@@ -397,14 +402,38 @@ export default function App() {
   const [authModalMode, setAuthModalMode] = useState<"login" | "register" | "forgot">("login");
   const [isProposeModalOpen, setIsProposeModalOpen] = useState(false);
   const [profileTab, setProfileTab] = useState<
-    "reviews" | "favorites" | "visitLogs" | "proposals" | "blogs"
+    "reviews" | "favorites" | "visitLogs" | "proposals" | "blogs" | "reports"
   >("reviews");
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
 
+  // Report Modal Global State (CLO3 & Community Guidelines)
+  const [globalReportTarget, setGlobalReportTarget] = useState<ReportTargetInfo | null>(null);
+  const [isGlobalReportModalOpen, setIsGlobalReportModalOpen] = useState(false);
+  const [globalReportDefaultTab, setGlobalReportDefaultTab] = useState<"form" | "guide" | "history">("form");
+
   const showToast = (msg: string) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(""), 2800);
+  };
+
+  const handleReportPlace = (place: Place) => {
+    setGlobalReportTarget({
+      targetType: "place",
+      targetId: place.id,
+      targetTitle: place.name,
+      targetSubtitle: `${place.location} • ${place.category}`,
+      province: place.province,
+      category: place.category,
+    });
+    setGlobalReportDefaultTab("form");
+    setIsGlobalReportModalOpen(true);
+  };
+
+  const handleOpenReportCenter = (tab: "form" | "guide" | "history" = "form") => {
+    setGlobalReportTarget(null);
+    setGlobalReportDefaultTab(tab);
+    setIsGlobalReportModalOpen(true);
   };
 
   const handleSelectPlace = (place: Place) => {
@@ -456,6 +485,41 @@ export default function App() {
     foodFilter === "Tất cả"
       ? foods
       : foods.filter((f) => f.region === foodFilter);
+
+  // ── REUSABLE GLOBAL MODALS RENDERER ──
+  const renderGlobalModals = () => (
+    <>
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        initialMode={authModalMode}
+        onLoginSuccess={(loggedInUser) => {
+          setUser(loggedInUser);
+          showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
+        }}
+      />
+
+      <ProposePlaceModal
+        isOpen={isProposeModalOpen}
+        onClose={() => setIsProposeModalOpen(false)}
+        onSubmitSuccess={handleProposeSuccess}
+      />
+
+      {isGlobalReportModalOpen && (
+        <ReportModal
+          initialTarget={globalReportTarget || undefined}
+          defaultTab={globalReportDefaultTab}
+          onClose={() => {
+            setIsGlobalReportModalOpen(false);
+            setGlobalReportTarget(null);
+          }}
+          onSubmittedReport={() => {
+            showToast("Đã gửi báo cáo vi phạm tới Ban Quản trị kiểm duyệt!");
+          }}
+        />
+      )}
+    </>
+  );
 
   // ── UNIFIED APPLICATION HEADER ──
   const renderAppHeader = (isHero = false) => (
@@ -521,7 +585,21 @@ export default function App() {
             <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white animate-pulse" />
           </button>
 
-          {/* Propose Place Button: Refined, solid emerald button */}
+          {/* Admin Portal Quick Switcher Button */}
+          <button
+            onClick={() => {
+              setSelectedPlace(null);
+              setActiveNav("Admin Cấp 1");
+              showToast("Mở Cổng Quản Trị Danh Mục (CLO3)...");
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 shadow-2xs transition-all cursor-pointer"
+            title="Mở giao diện Quản trị viên Cấp 1"
+          >
+            <ShieldCheck size={14} className="text-blue-600" />
+            <span className="hidden sm:inline">Admin Portal</span>
+            <span className="sm:hidden">Admin</span>
+          </button>
+
           <button
             onClick={() => setIsProposeModalOpen(true)}
             className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-white bg-emerald-800 hover:bg-emerald-900 active:scale-98 transition-all shadow-sm cursor-pointer"
@@ -692,6 +770,45 @@ export default function App() {
                           {proposalsList.length}
                         </span>
                       </button>
+
+                      <button
+                        onClick={() => {
+                          setSelectedPlace(null);
+                          setActiveNav("Hồ sơ");
+                          setProfileTab("reports");
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full px-3.5 py-2 text-left font-medium text-slate-700 hover:bg-rose-50/70 hover:text-rose-900 flex items-center justify-between transition-colors group cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <ShieldAlert size={15} className="text-slate-400 group-hover:text-rose-600 transition-colors" />
+                          <span>Tố cáo vi phạm</span>
+                        </span>
+                        <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-rose-50 text-rose-700 font-semibold">
+                          3
+                        </span>
+                      </button>
+                    </div>
+
+                    {/* Quyền Quản Trị Cấp 1 (Category Admin) */}
+                    <div className="py-1 text-xs border-t border-slate-100">
+                      <button
+                        onClick={() => {
+                          setSelectedPlace(null);
+                          setActiveNav("Admin Cấp 1");
+                          setIsUserMenuOpen(false);
+                          showToast("Mở Cổng Quản Trị Danh Mục (CLO3)...");
+                        }}
+                        className="w-full px-3.5 py-2 text-left font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 flex items-center justify-between transition-colors group cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <ShieldCheck size={15} className="text-slate-500 group-hover:text-blue-600 transition-colors" />
+                          <span>Quản trị Danh mục</span>
+                        </span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-medium group-hover:bg-blue-50 group-hover:text-blue-700">
+                          CLO3
+                        </span>
+                      </button>
                     </div>
 
                     {/* Group 3: Đăng xuất */}
@@ -816,21 +933,7 @@ export default function App() {
           }
         />
 
-        <AuthModal
-          isOpen={isAuthModalOpen}
-          onClose={() => setIsAuthModalOpen(false)}
-          initialMode={authModalMode}
-          onLoginSuccess={(loggedInUser) => {
-            setUser(loggedInUser);
-            showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
-          }}
-        />
-
-        <ProposePlaceModal
-          isOpen={isProposeModalOpen}
-          onClose={() => setIsProposeModalOpen(false)}
-          onSubmitSuccess={handleProposeSuccess}
-        />
+        {renderGlobalModals()}
 
         {toastMsg && (
           <div className="fixed bottom-6 right-6 z-[1000] px-4 py-3 bg-emerald-900 text-white text-xs font-bold rounded-2xl shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3 duration-200">
@@ -863,21 +966,7 @@ export default function App() {
           }}
         />
 
-        <AuthModal
-          isOpen={isAuthModalOpen}
-          onClose={() => setIsAuthModalOpen(false)}
-          initialMode={authModalMode}
-          onLoginSuccess={(loggedInUser) => {
-            setUser(loggedInUser);
-            showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
-          }}
-        />
-
-        <ProposePlaceModal
-          isOpen={isProposeModalOpen}
-          onClose={() => setIsProposeModalOpen(false)}
-          onSubmitSuccess={handleProposeSuccess}
-        />
+        {renderGlobalModals()}
 
         {renderFloatingChat()}
       </div>
@@ -889,23 +978,13 @@ export default function App() {
     return (
       <div className="min-h-full font-['Inter',system-ui,sans-serif]">
         {renderAppHeader()}
-        <MapPage history={visitHistory} onSelectPlace={handleSelectPlace} />
-
-        <AuthModal
-          isOpen={isAuthModalOpen}
-          onClose={() => setIsAuthModalOpen(false)}
-          initialMode={authModalMode}
-          onLoginSuccess={(loggedInUser) => {
-            setUser(loggedInUser);
-            showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
-          }}
+        <MapPage
+          history={visitHistory}
+          onSelectPlace={handleSelectPlace}
+          onReportPlace={handleReportPlace}
         />
 
-        <ProposePlaceModal
-          isOpen={isProposeModalOpen}
-          onClose={() => setIsProposeModalOpen(false)}
-          onSubmitSuccess={handleProposeSuccess}
-        />
+        {renderGlobalModals()}
 
         {renderFloatingChat()}
       </div>
@@ -917,23 +996,12 @@ export default function App() {
     return (
       <div className="min-h-full font-['Inter',system-ui,sans-serif]">
         {renderAppHeader()}
-        <ExplorePage onSelectPlace={handleSelectPlace} />
-
-        <AuthModal
-          isOpen={isAuthModalOpen}
-          onClose={() => setIsAuthModalOpen(false)}
-          initialMode={authModalMode}
-          onLoginSuccess={(loggedInUser) => {
-            setUser(loggedInUser);
-            showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
-          }}
+        <ExplorePage
+          onSelectPlace={handleSelectPlace}
+          onReportPlace={handleReportPlace}
         />
 
-        <ProposePlaceModal
-          isOpen={isProposeModalOpen}
-          onClose={() => setIsProposeModalOpen(false)}
-          onSubmitSuccess={handleProposeSuccess}
-        />
+        {renderGlobalModals()}
 
         {renderFloatingChat()}
       </div>
@@ -945,23 +1013,12 @@ export default function App() {
     return (
       <div className="min-h-full font-['Inter',system-ui,sans-serif]">
         {renderAppHeader()}
-        <FoodPage onSelectPlace={handleSelectPlace} />
-
-        <AuthModal
-          isOpen={isAuthModalOpen}
-          onClose={() => setIsAuthModalOpen(false)}
-          initialMode={authModalMode}
-          onLoginSuccess={(loggedInUser) => {
-            setUser(loggedInUser);
-            showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
-          }}
+        <FoodPage
+          onSelectPlace={handleSelectPlace}
+          onReportPlace={handleReportPlace}
         />
 
-        <ProposePlaceModal
-          isOpen={isProposeModalOpen}
-          onClose={() => setIsProposeModalOpen(false)}
-          onSubmitSuccess={handleProposeSuccess}
-        />
+        {renderGlobalModals()}
 
         {renderFloatingChat()}
       </div>
@@ -973,23 +1030,9 @@ export default function App() {
     return (
       <div className="min-h-full font-['Inter',system-ui,sans-serif]">
         {renderAppHeader()}
-        <ItineraryPage />
+        <ItineraryPage onSelectPlace={handleSelectPlace} />
 
-        <AuthModal
-          isOpen={isAuthModalOpen}
-          onClose={() => setIsAuthModalOpen(false)}
-          initialMode={authModalMode}
-          onLoginSuccess={(loggedInUser) => {
-            setUser(loggedInUser);
-            showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
-          }}
-        />
-
-        <ProposePlaceModal
-          isOpen={isProposeModalOpen}
-          onClose={() => setIsProposeModalOpen(false)}
-          onSubmitSuccess={handleProposeSuccess}
-        />
+        {renderGlobalModals()}
 
         {renderFloatingChat()}
       </div>
@@ -1001,25 +1044,33 @@ export default function App() {
     return (
       <div className="min-h-full font-['Inter',system-ui,sans-serif]">
         {renderAppHeader()}
-        <BlogPage />
+        <BlogPage onSelectPlace={handleSelectPlace} />
 
-        <AuthModal
-          isOpen={isAuthModalOpen}
-          onClose={() => setIsAuthModalOpen(false)}
-          initialMode={authModalMode}
-          onLoginSuccess={(loggedInUser) => {
-            setUser(loggedInUser);
-            showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
-          }}
-        />
-
-        <ProposePlaceModal
-          isOpen={isProposeModalOpen}
-          onClose={() => setIsProposeModalOpen(false)}
-          onSubmitSuccess={handleProposeSuccess}
-        />
+        {renderGlobalModals()}
 
         {renderFloatingChat()}
+      </div>
+    );
+  }
+
+  // ── ROUTE 7.5: ADMIN CẤP 1 - TRẠM KIỂM DUYỆT NỘI DUNG (CLO3) ──
+  if (activeNav === "Admin Cấp 1" || activeNav === "Trạm Kiểm Duyệt") {
+    return (
+      <div className="min-h-full font-['Inter',system-ui,sans-serif]">
+        <AdminModeratorPortal
+          onBackToUserView={() => {
+            setActiveNav("Trang chủ");
+            showToast("Đã quay về giao diện người dùng du lịch.");
+          }}
+          showToast={showToast}
+        />
+
+        {toastMsg && (
+          <div className="fixed bottom-6 right-6 z-[1000] px-4 py-3 bg-slate-900 text-white text-xs font-bold rounded-2xl shadow-2xl flex items-center gap-2 border border-slate-700 animate-in fade-in slide-in-from-bottom-3 duration-200">
+            <CheckCircle2 size={16} className="text-emerald-400" />
+            <span>{toastMsg}</span>
+          </div>
+        )}
       </div>
     );
   }
@@ -1045,21 +1096,7 @@ export default function App() {
           }}
         />
 
-        <AuthModal
-          isOpen={isAuthModalOpen}
-          onClose={() => setIsAuthModalOpen(false)}
-          initialMode={authModalMode}
-          onLoginSuccess={(loggedInUser) => {
-            setUser(loggedInUser);
-            showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
-          }}
-        />
-
-        <ProposePlaceModal
-          isOpen={isProposeModalOpen}
-          onClose={() => setIsProposeModalOpen(false)}
-          onSubmitSuccess={handleProposeSuccess}
-        />
+        {renderGlobalModals()}
 
         <FloatingChatWidget
           onOpenFullChat={(convId) => {
@@ -1094,21 +1131,7 @@ export default function App() {
           showToast={showToast}
         />
 
-        <AuthModal
-          isOpen={isAuthModalOpen}
-          onClose={() => setIsAuthModalOpen(false)}
-          initialMode={authModalMode}
-          onLoginSuccess={(loggedInUser) => {
-            setUser(loggedInUser);
-            showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
-          }}
-        />
-
-        <ProposePlaceModal
-          isOpen={isProposeModalOpen}
-          onClose={() => setIsProposeModalOpen(false)}
-          onSubmitSuccess={handleProposeSuccess}
-        />
+        {renderGlobalModals()}
 
         {toastMsg && (
           <div className="fixed bottom-6 right-6 z-[1000] px-4 py-3 bg-emerald-900 text-white text-xs font-bold rounded-2xl shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3 duration-200">
@@ -1269,6 +1292,26 @@ export default function App() {
                       </span>
                     </div>
 
+                    {/* Report button on top-right of carousel card */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setGlobalReportTarget({
+                          targetType: "place",
+                          targetTitle: place.name,
+                          targetSubtitle: `${region.label} • ${place.desc.slice(0, 45)}...`,
+                          province: place.name,
+                          category: "Du lịch",
+                        });
+                        setGlobalReportDefaultTab("form");
+                        setIsGlobalReportModalOpen(true);
+                      }}
+                      className="absolute top-3.5 right-3.5 w-7 h-7 rounded-full bg-black/40 hover:bg-rose-600 text-white/80 hover:text-white flex items-center justify-center backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer z-10"
+                      title="Báo cáo địa điểm này sai thông tin hoặc vi phạm"
+                    >
+                      <Flag size={12} />
+                    </button>
+
                     {/* Bottom content */}
                     <div className="absolute bottom-0 left-0 right-0 p-3.5">
                       <h4 className="text-white font-bold text-base leading-tight mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>
@@ -1341,6 +1384,24 @@ export default function App() {
                     style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(8px)" }}
                   >
                     <Heart size={14} className={favorites.has(i) ? "fill-red-400 text-red-400" : "text-white"} />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setGlobalReportTarget({
+                        targetType: "place",
+                        targetTitle: tour.title,
+                        targetSubtitle: `${tour.badge} • ${tour.price}`,
+                        category: "Du lịch",
+                      });
+                      setGlobalReportDefaultTab("form");
+                      setIsGlobalReportModalOpen(true);
+                    }}
+                    className="absolute top-3 right-12 w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-110 hover:bg-rose-600 text-white/80 hover:text-white cursor-pointer"
+                    style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(8px)" }}
+                    title="Báo cáo tour này"
+                  >
+                    <Flag size={13} />
                   </button>
                   {/* Rating overlay */}
                   <div className="absolute bottom-3 left-3 flex items-center gap-1">
@@ -1416,11 +1477,29 @@ export default function App() {
                 {/* Gradient */}
                 <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.2) 50%, transparent 100%)" }} />
 
-                {/* Region badge top */}
-                <div className="absolute top-4 right-4">
+                {/* Region badge top & Report button */}
+                <div className="absolute top-4 right-4 flex items-center gap-1.5">
                   <span className="text-[10px] font-black tracking-widest uppercase text-white px-2.5 py-1 rounded-full" style={{ background: "rgba(6,78,59,0.85)", backdropFilter: "blur(4px)" }}>
                     {food.region}
                   </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setGlobalReportTarget({
+                        targetType: "place",
+                        targetTitle: food.name,
+                        targetSubtitle: `${food.origin} • ${food.region}`,
+                        province: food.origin,
+                        category: "Ăn uống",
+                      });
+                      setGlobalReportDefaultTab("form");
+                      setIsGlobalReportModalOpen(true);
+                    }}
+                    className="w-7 h-7 rounded-full bg-black/40 hover:bg-rose-600 text-white/80 hover:text-white flex items-center justify-center backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                    title="Báo cáo món ăn này"
+                  >
+                    <Flag size={12} />
+                  </button>
                 </div>
 
                 {/* Bottom info */}
@@ -1661,6 +1740,22 @@ export default function App() {
             <p className="text-xs" style={{ color: "#CBD5E1" }}>
               © 2026 LangThang. Tất cả quyền được bảo lưu.
             </p>
+            <div className="flex flex-wrap items-center gap-4 text-xs" style={{ color: "#CBD5E1" }}>
+              <button
+                onClick={() => handleOpenReportCenter("guide")}
+                className="hover:text-amber-400 transition-colors cursor-pointer flex items-center gap-1"
+              >
+                <Flag size={12} className="text-rose-400" />
+                <span>Quy chuẩn & Báo cáo vi phạm</span>
+              </button>
+              <button
+                onClick={() => handleOpenReportCenter("history")}
+                className="hover:text-amber-400 transition-colors cursor-pointer flex items-center gap-1"
+              >
+                <ShieldAlert size={12} className="text-blue-400" />
+                <span>Lịch sử tố cáo & Khiếu nại</span>
+              </button>
+            </div>
             <p className="text-xs" style={{ color: "#CBD5E1" }}>
               Thiết kế với ❤ cho những tâm hồn lãng du Việt Nam
             </p>
@@ -1668,23 +1763,7 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        initialMode={authModalMode}
-        onLoginSuccess={(loggedInUser) => {
-          setUser(loggedInUser);
-          showToast(`Xin chào mừng ${loggedInUser.fullName}!`);
-        }}
-      />
-
-      {/* Propose Place Modal */}
-      <ProposePlaceModal
-        isOpen={isProposeModalOpen}
-        onClose={() => setIsProposeModalOpen(false)}
-        onSubmitSuccess={handleProposeSuccess}
-      />
+      {renderGlobalModals()}
 
       {/* Floating Chat Widget across Home page */}
       <FloatingChatWidget
@@ -1696,6 +1775,24 @@ export default function App() {
         onSelectPlace={handleSelectPlace}
         showToast={showToast}
       />
+
+      {/* ── DISCREET CORNER ADMIN SWITCHER (Góc dưới cùng bên trái) ── */}
+      {activeNav !== "Admin Cấp 1" && activeNav !== "Trạm Kiểm Duyệt" && (
+        <div className="fixed bottom-5 left-5 z-40">
+          <button
+            onClick={() => {
+              setSelectedPlace(null);
+              setActiveNav("Admin Cấp 1");
+              showToast("Chuyển sang Cổng Quản trị Danh mục (CLO3)...");
+            }}
+            className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/80 hover:bg-slate-900 text-slate-300 hover:text-white rounded-full shadow-md border border-slate-700/60 backdrop-blur-md transition-all cursor-pointer text-xs font-normal"
+            title="Cổng Quản trị Danh mục Ẩm thực (CLO3)"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+            <span>Quản trị Danh mục</span>
+          </button>
+        </div>
+      )}
 
       {/* Toast Notification */}
       {toastMsg && (

@@ -44,7 +44,9 @@ import {
   Palette,
   Check,
   PhoneCall,
+  Flag,
 } from "lucide-react";
+import ReportModal, { ReportTargetInfo } from "./ReportModal";
 import {
   ChatMessage,
   Conversation,
@@ -129,6 +131,7 @@ export default function ChatPage({
   const [lightboxImage, setLightboxImage] = useState<ImageAttachment | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [callModal, setCallModal] = useState<{ isOpen: boolean; type: "voice" | "video"; partnerName: string } | null>(null);
+  const [reportTarget, setReportTarget] = useState<ReportTargetInfo | null>(null);
 
   // Audio recording simulation
   const [isRecording, setIsRecording] = useState(false);
@@ -238,7 +241,7 @@ export default function ChatPage({
         setPartnerTyping(true);
         setTimeout(() => {
           setPartnerTyping(false);
-          const replyText = generateSimulatedReply(activeConversation, textToSend);
+          const replySim = generateSimulatedReply(activeConversation, textToSend);
           const replyMsgId = `m_${Date.now()}`;
           const replyMsg: ChatMessage = {
             id: replyMsgId,
@@ -248,7 +251,8 @@ export default function ChatPage({
             senderAvatar: activeConversation.avatarUrl,
             timestamp: timeStr,
             createdAt: Date.now(),
-            text: replyText,
+            text: replySim.text,
+            attachments: replySim.attachment ? [replySim.attachment] : undefined,
             status: "read",
           };
 
@@ -263,7 +267,7 @@ export default function ChatPage({
                 ? {
                     ...c,
                     lastMessage: {
-                      text: replyText,
+                      text: replySim.text,
                       timestamp: timeStr,
                       senderId: replyMsg.senderId,
                       status: "read",
@@ -319,7 +323,7 @@ export default function ChatPage({
       price: p.price,
       img: p.img,
       desc: p.desc,
-      reviewCount: p.reviewsCount || 120,
+      reviewCount: (p as any).reviews || (p as any).reviewsCount || 120,
       openStatus: "Đang mở cửa · Đóng cửa vào 22:00",
       phone: "028 3822 9999",
       mapSnapshotUrl: "https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600&h=200&fit=crop",
@@ -990,6 +994,24 @@ export default function ChatPage({
                   >
                     <Reply size={14} />
                   </button>
+                  {msg.senderId !== "current-user" && (
+                    <button
+                      onClick={() =>
+                        setReportTarget({
+                          targetType: "comment",
+                          targetId: typeof msg.id === "number" ? msg.id : 100,
+                          targetTitle: `Tin nhắn từ ${activeConversation.name}`,
+                          targetSubtitle: `Hội thoại: ${activeConversation.name}`,
+                          targetContent: msg.text,
+                          targetAuthor: activeConversation.name,
+                        })
+                      }
+                      className="w-7 h-7 rounded-full hover:bg-rose-50 text-[#65676B] hover:text-rose-600 flex items-center justify-center cursor-pointer"
+                      title="Báo cáo tin nhắn này"
+                    >
+                      <Flag size={13} />
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -1068,7 +1090,7 @@ export default function ChatPage({
                     </div>
                   )}
                   <span className="text-xs font-semibold text-[#050505] truncate max-w-[130px]">
-                    {att.type === "place" ? att.name : att.type === "image" ? att.name || "Hình ảnh" : att.name}
+                    {att.type === "place" ? att.name : att.type === "image" ? att.name || "Hình ảnh" : (att as any).name || (att as any).title || "Tệp đính kèm"}
                   </span>
                   <button
                     onClick={() => setStagedAttachments((prev) => prev.filter((_, i) => i !== idx))}
@@ -1451,6 +1473,21 @@ export default function ChatPage({
                     <X size={18} />
                     <span>Chặn</span>
                   </button>
+                  <button
+                    onClick={() =>
+                      setReportTarget({
+                        targetType: "comment",
+                        targetTitle: `Cuộc trò chuyện với ${activeConversation.name}`,
+                        targetSubtitle: `ID: ${activeConversation.id} • ${(activeConversation as any).userCount || 2} người`,
+                        targetContent: `Báo cáo nội dung vi phạm trong hội thoại với ${activeConversation.name}`,
+                        targetAuthor: activeConversation.name,
+                      })
+                    }
+                    className="w-full px-3 py-2 text-left text-[14px] font-semibold text-rose-600 hover:bg-rose-50 rounded-xl flex items-center gap-3 cursor-pointer"
+                  >
+                    <Flag size={18} />
+                    <span>Báo cáo cuộc trò chuyện</span>
+                  </button>
                 </div>
               )}
             </div>
@@ -1763,6 +1800,13 @@ export default function ChatPage({
             </div>
           </div>
         </div>
+      )}
+
+      {reportTarget && (
+        <ReportModal
+          initialTarget={reportTarget}
+          onClose={() => setReportTarget(null)}
+        />
       )}
     </div>
   );

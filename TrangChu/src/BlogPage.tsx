@@ -23,8 +23,11 @@ import {
   Flame,
   Check,
   Tag,
+  Flag,
+  ShieldAlert,
 } from "lucide-react";
 import { BlogArticleItem, initialBlogArticles, Place, places } from "./data";
+import ReportModal, { ReportTargetInfo } from "./ReportModal";
 
 export interface BlogPageProps {
   onBack?: () => void;
@@ -41,6 +44,35 @@ export default function BlogPage({ onBack, onSelectPlace }: BlogPageProps) {
   const [savedArticles, setSavedArticles] = useState<Set<number>>(new Set([1]));
   const [toastMsg, setToastMsg] = useState("");
   const [readProgress, setReadProgress] = useState(0);
+  const [reportTarget, setReportTarget] = useState<ReportTargetInfo | null>(null);
+  const [newCommentText, setNewCommentText] = useState("");
+  const [commentsList, setCommentsList] = useState([
+    {
+      id: 101,
+      author: "Hoàng Nam",
+      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&h=80&fit=crop",
+      time: "2 giờ trước",
+      text: "Bài viết rất chi tiết, mình vừa ghé quán Bánh Mì Phượng theo gợi ý thấy sốt bơ trứng ngon thật sự!",
+      likes: 12,
+    },
+    {
+      id: 102,
+      author: "user_danang_99",
+      avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=80&h=80&fit=crop",
+      time: "1 ngày trước",
+      text: "Mấy đứa dân vùng khác tới đây ăn đồ ăn dở thì cút về đi đừng chê bai ẩm thực xứ Quảng...",
+      likes: 0,
+      isControversial: true,
+    },
+    {
+      id: 103,
+      author: "Thu Trang",
+      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop",
+      time: "3 ngày trước",
+      text: "Bạn ơi cho mình hỏi đi Hội An mùa này buổi tối dạo phố cổ có cần mang áo khoác mỏng không ạ?",
+      likes: 4,
+    },
+  ]);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -317,6 +349,21 @@ export default function BlogPage({ onBack, onSelectPlace }: BlogPageProps) {
                       <ArrowRight size={14} />
                     </button>
                     <button
+                      onClick={() =>
+                        setReportTarget({
+                          targetType: "review",
+                          targetTitle: featuredArticle.title,
+                          targetSubtitle: `Tác giả: ${featuredArticle.authorName} • ${featuredArticle.category}`,
+                          targetContent: featuredArticle.excerpt,
+                          targetAuthor: featuredArticle.authorName,
+                        })
+                      }
+                      className="p-2.5 rounded-xl border border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-all cursor-pointer"
+                      title="Báo cáo bài viết này"
+                    >
+                      <Flag size={15} />
+                    </button>
+                    <button
                       onClick={(e) => toggleSave(featuredArticle.id, e)}
                       className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
                         savedArticles.has(featuredArticle.id)
@@ -373,7 +420,23 @@ export default function BlogPage({ onBack, onSelectPlace }: BlogPageProps) {
                           {art.category}
                         </span>
                       </div>
-                      <div className="absolute top-3 right-3">
+                      <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setReportTarget({
+                              targetType: "review",
+                              targetTitle: art.title,
+                              targetSubtitle: `Tác giả: ${art.authorName} • ${art.category}`,
+                              targetContent: art.excerpt,
+                              targetAuthor: art.authorName,
+                            });
+                          }}
+                          className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm bg-black/40 text-white hover:bg-rose-600 hover:text-white transition-all cursor-pointer"
+                          title="Báo cáo bài viết này"
+                        >
+                          <Flag size={13} />
+                        </button>
                         <button
                           onClick={(e) => toggleSave(art.id, e)}
                           className={`w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm transition-all cursor-pointer ${
@@ -381,6 +444,7 @@ export default function BlogPage({ onBack, onSelectPlace }: BlogPageProps) {
                               ? "bg-emerald-800 text-white"
                               : "bg-black/40 text-white hover:bg-black/60"
                           }`}
+                          title="Lưu bài viết"
                         >
                           <Bookmark
                             size={14}
@@ -496,6 +560,23 @@ export default function BlogPage({ onBack, onSelectPlace }: BlogPageProps) {
                   title="Chia sẻ bài viết"
                 >
                   <Share2 size={15} />
+                </button>
+
+                <button
+                  onClick={() =>
+                    setReportTarget({
+                      targetType: "review",
+                      targetTitle: selectedArticle.title,
+                      targetSubtitle: `Bài viết bởi ${selectedArticle.authorName} • ${selectedArticle.category}`,
+                      targetContent: selectedArticle.subtitle || selectedArticle.excerpt,
+                      targetAuthor: selectedArticle.authorName,
+                    })
+                  }
+                  className="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-slate-200 text-slate-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50/70 transition-all cursor-pointer shadow-2xs"
+                  title="Báo cáo bài viết này"
+                >
+                  <Flag size={13} className="text-rose-500" />
+                  <span className="hidden sm:inline">Báo cáo bài viết</span>
                 </button>
               </div>
             </div>
@@ -669,6 +750,132 @@ export default function BlogPage({ onBack, onSelectPlace }: BlogPageProps) {
                           : "Lưu vào cẩm nang"}
                       </span>
                     </button>
+
+                    <button
+                      onClick={() =>
+                        setReportTarget({
+                          targetType: "review",
+                          targetTitle: selectedArticle.title,
+                          targetSubtitle: `Bài viết bởi ${selectedArticle.authorName} • ${selectedArticle.category}`,
+                          targetContent: selectedArticle.subtitle || selectedArticle.excerpt,
+                          targetAuthor: selectedArticle.authorName,
+                        })
+                      }
+                      className="px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 border border-slate-200 text-slate-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-all cursor-pointer"
+                      title="Báo cáo bài viết này có nội dung sai lệch hoặc vi phạm"
+                    >
+                      <Flag size={14} className="text-rose-500" />
+                      <span>Báo cáo bài viết</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* ══ THẢO LUẬN & BÌNH LUẬN (COMMENTS & USER REPORTS - dbo.Reports.TargetType = 'comment') ══ */}
+                <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <div className="flex items-center gap-2 font-bold text-sm text-slate-900">
+                      <MessageSquare size={16} className="text-emerald-800" />
+                      <span>Thảo luận bạn đọc ({commentsList.length})</span>
+                    </div>
+                    <span className="text-[11px] text-slate-400">Tiêu chuẩn cộng đồng</span>
+                  </div>
+
+                  {/* Form viết bình luận */}
+                  <div className="flex gap-3">
+                    <img
+                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop"
+                      alt="Avatar"
+                      className="w-8 h-8 rounded-full object-cover shrink-0 mt-1"
+                    />
+                    <div className="flex-1 space-y-2">
+                      <textarea
+                        rows={2}
+                        value={newCommentText}
+                        onChange={(e) => setNewCommentText(e.target.value)}
+                        placeholder="Chia sẻ kinh nghiệm hoặc đặt câu hỏi về chuyến đi..."
+                        className="w-full text-xs p-3 rounded-xl border border-slate-200 outline-none focus:border-emerald-700 resize-none text-slate-800 placeholder:text-slate-400"
+                      />
+                      <div className="flex justify-end">
+                        <button
+                          onClick={() => {
+                            if (!newCommentText.trim()) return;
+                            const newComment = {
+                              id: 100 + commentsList.length + 1,
+                              author: "Bạn (Người dùng)",
+                              avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop",
+                              time: "Vừa xong",
+                              text: newCommentText.trim(),
+                              likes: 0,
+                            };
+                            setCommentsList([newComment, ...commentsList]);
+                            setNewCommentText("");
+                            showToast("Đã đăng bình luận!");
+                          }}
+                          className="px-3.5 py-1.5 rounded-lg text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-900 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        >
+                          <Send size={12} />
+                          <span>Gửi bình luận</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Danh sách bình luận */}
+                  <div className="space-y-3 pt-1">
+                    {commentsList.map((c: any) => (
+                      <div
+                        key={c.id}
+                        className={`p-4 rounded-2xl border transition-all space-y-2.5 ${
+                          c.isControversial
+                            ? "bg-rose-50/40 border-rose-200/90 shadow-2xs"
+                            : "bg-slate-50/70 hover:bg-white border-slate-200/80 hover:border-slate-300 hover:shadow-xs"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2.5">
+                            <img
+                              src={c.avatar}
+                              alt={c.author}
+                              className="w-8 h-8 rounded-full object-cover shrink-0 ring-1 ring-slate-200"
+                            />
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold text-slate-900">{c.author}</span>
+                                {c.isControversial && (
+                                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-rose-100 text-rose-800 border border-rose-200">
+                                    Nghi vấn vi phạm
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-slate-400 block">{c.time}</span>
+                            </div>
+                          </div>
+
+                          {/* Nút Báo cáo Bình luận vi phạm */}
+                          <button
+                            onClick={() =>
+                              setReportTarget({
+                                targetType: "comment",
+                                targetId: c.id,
+                                targetTitle: `Bình luận của ${c.author}`,
+                                targetSubtitle: `Tại bài viết: ${selectedArticle.title}`,
+                                targetContent: c.text,
+                                targetAuthor: c.author,
+                              })
+                            }
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-rose-600 hover:bg-rose-50/80 transition-colors cursor-pointer"
+                            title="Báo cáo bình luận này vi phạm quy chuẩn cộng đồng"
+                          >
+                            <Flag size={12} className="text-rose-500" />
+                            <span>Báo cáo vi phạm</span>
+                          </button>
+                        </div>
+
+                        <p className="text-xs text-slate-700 leading-relaxed pl-0 sm:pl-10.5">
+                          {c.text}
+                        </p>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -823,6 +1030,17 @@ export default function BlogPage({ onBack, onSelectPlace }: BlogPageProps) {
             </div>
           </main>
         </div>
+      )}
+
+      {/* Report Modal */}
+      {reportTarget && (
+        <ReportModal
+          initialTarget={reportTarget}
+          onClose={() => setReportTarget(null)}
+          onSubmittedReport={() => {
+            showToast("Đã gửi báo cáo bình luận tới Quản trị viên danh mục!");
+          }}
+        />
       )}
     </div>
   );
