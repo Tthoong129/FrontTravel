@@ -12,6 +12,7 @@ import FloatingChatWidget from "./FloatingChatWidget";
 import AuthModal from "./AuthModal";
 import ProposePlaceModal from "./ProposePlaceModal";
 import AdminModeratorPortal from "./AdminModeratorPortal";
+import SystemAdminPortal from "./SystemAdminPortal";
 import ReportModal, { ReportTargetInfo } from "./ReportModal";
 import {
   Place,
@@ -601,6 +602,19 @@ export default function App() {
           </button>
 
           <button
+            onClick={() => {
+              setSelectedPlace(null);
+              setActiveNav("System Admin");
+              showToast("Mở Trung tâm điều hành System Admin...");
+            }}
+            className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 shadow-2xs transition-all cursor-pointer"
+            title="Mở giao diện System Admin"
+          >
+            <Shield size={14} className="text-emerald-700" />
+            <span>System Admin</span>
+          </button>
+
+          <button
             onClick={() => setIsProposeModalOpen(true)}
             className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-white bg-emerald-800 hover:bg-emerald-900 active:scale-98 transition-all shadow-sm cursor-pointer"
           >
@@ -808,6 +822,21 @@ export default function App() {
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-medium group-hover:bg-blue-50 group-hover:text-blue-700">
                           CLO3
                         </span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedPlace(null);
+                          setActiveNav("System Admin");
+                          setIsUserMenuOpen(false);
+                          showToast("Mở Trung tâm điều hành System Admin...");
+                        }}
+                        className="w-full px-3.5 py-2 text-left font-medium text-slate-700 hover:text-slate-900 hover:bg-emerald-50 flex items-center justify-between transition-colors group cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <Shield size={15} className="text-slate-500 group-hover:text-emerald-700 transition-colors" />
+                          <span>System Admin</span>
+                        </span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-medium">Toàn quyền</span>
                       </button>
                     </div>
 
@@ -1061,6 +1090,32 @@ export default function App() {
           onBackToUserView={() => {
             setActiveNav("Trang chủ");
             showToast("Đã quay về giao diện người dùng du lịch.");
+          }}
+          showToast={showToast}
+        />
+
+        {toastMsg && (
+          <div className="fixed bottom-6 right-6 z-[1000] px-4 py-3 bg-slate-900 text-white text-xs font-bold rounded-2xl shadow-2xl flex items-center gap-2 border border-slate-700 animate-in fade-in slide-in-from-bottom-3 duration-200">
+            <CheckCircle2 size={16} className="text-emerald-400" />
+            <span>{toastMsg}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── ROUTE 7.6: SYSTEM ADMIN - TRUNG TÂM ĐIỀU HÀNH TOÀN HỆ THỐNG ──
+  if (activeNav === "System Admin") {
+    return (
+      <div className="min-h-full font-['Inter',system-ui,sans-serif]">
+        <SystemAdminPortal
+          onBackToUserView={() => {
+            setActiveNav("Trang chủ");
+            showToast("Đã quay về giao diện người dùng du lịch.");
+          }}
+          onOpenCategoryAdmin={() => {
+            setActiveNav("Admin Cấp 1");
+            showToast("Đã chuyển sang portal Admin cấp 1.");
           }}
           showToast={showToast}
         />
@@ -1777,20 +1832,34 @@ export default function App() {
       />
 
       {/* ── DISCREET CORNER ADMIN SWITCHER (Góc dưới cùng bên trái) ── */}
-      {activeNav !== "Admin Cấp 1" && activeNav !== "Trạm Kiểm Duyệt" && (
+      {activeNav !== "Admin Cấp 1" && activeNav !== "Trạm Kiểm Duyệt" && activeNav !== "System Admin" && (
         <div className="fixed bottom-5 left-5 z-40">
-          <button
-            onClick={() => {
-              setSelectedPlace(null);
-              setActiveNav("Admin Cấp 1");
-              showToast("Chuyển sang Cổng Quản trị Danh mục (CLO3)...");
-            }}
-            className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/80 hover:bg-slate-900 text-slate-300 hover:text-white rounded-full shadow-md border border-slate-700/60 backdrop-blur-md transition-all cursor-pointer text-xs font-normal"
-            title="Cổng Quản trị Danh mục Ẩm thực (CLO3)"
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-            <span>Quản trị Danh mục</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                setSelectedPlace(null);
+                setActiveNav("Admin Cấp 1");
+                showToast("Chuyển sang Cổng Quản trị Danh mục (CLO3)...");
+              }}
+              className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/80 hover:bg-slate-900 text-slate-300 hover:text-white rounded-full shadow-md border border-slate-700/60 backdrop-blur-md transition-all cursor-pointer text-xs font-normal"
+              title="Cổng Quản trị Danh mục Ẩm thực (CLO3)"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+              <span>Admin cấp 1</span>
+            </button>
+            <button
+              onClick={() => {
+                setSelectedPlace(null);
+                setActiveNav("System Admin");
+                showToast("Chuyển sang Trung tâm điều hành System Admin...");
+              }}
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-emerald-950/90 hover:bg-emerald-950 text-emerald-100 hover:text-white rounded-full shadow-md border border-emerald-700/60 backdrop-blur-md transition-all cursor-pointer text-xs font-normal"
+              title="Trung tâm điều hành System Admin"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
+              <span>System Admin</span>
+            </button>
+          </div>
         </div>
       )}
 
