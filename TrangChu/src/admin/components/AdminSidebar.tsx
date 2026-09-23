@@ -12,9 +12,13 @@ import {
   Layers,
   Bell,
   History,
+  ShieldCheck,
+  Settings2,
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
+  Users,
+  ArrowLeftRight,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -30,6 +34,7 @@ interface AdminSidebarProps {
   foodsCount: number;
   blogsCount: number;
   auditLogsCount: number;
+  onOpenSystemAdmin?: () => void;
   onBackToUserView: () => void;
 }
 
@@ -46,6 +51,7 @@ export default function AdminSidebar({
   foodsCount,
   blogsCount,
   auditLogsCount,
+  onOpenSystemAdmin,
   onBackToUserView,
 }: AdminSidebarProps) {
   return (
@@ -53,7 +59,7 @@ export default function AdminSidebar({
       {/* Mobile backdrop */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-30 lg:hidden"
+          className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-30 lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
@@ -61,31 +67,31 @@ export default function AdminSidebar({
       <aside
         className={`${
           isSidebarOpen ? "w-64 translate-x-0" : "-translate-x-full lg:translate-x-0 lg:w-20"
-        } fixed lg:sticky top-0 h-screen bg-white border-r border-slate-200/80 flex flex-col justify-between shrink-0 transition-all duration-300 ease-in-out z-40 select-none shadow-[2px_0_12px_rgba(0,0,0,0.02)]`}
+        } fixed lg:sticky top-0 h-screen bg-[#06281E] text-emerald-100 border-r border-emerald-900/60 flex flex-col justify-between shrink-0 transition-all duration-300 ease-in-out z-40 select-none shadow-[4px_0_24px_rgba(0,0,0,0.22)]`}
       >
         <div className="flex flex-col h-full overflow-hidden">
           {/* Brand Header & Toggle */}
-          <div className="h-16 px-5 flex items-center justify-between shrink-0 border-b border-slate-100">
+          <div className="h-16 px-5 flex items-center justify-between shrink-0 border-b border-emerald-900/60 bg-[#031d16]">
             <div className="flex items-center gap-3 overflow-hidden">
-              <div className="flex items-center -space-x-1.5 shrink-0">
-                <div className="w-6 h-6 rounded-full bg-sky-400" />
-                <div className="w-6 h-6 rounded-full bg-blue-600 shadow-sm flex items-center justify-center text-white font-extrabold text-[9px]">
-                  LT
-                </div>
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500 text-[10px] font-black text-white shadow-md shadow-emerald-500/40 shrink-0">
+                LT
               </div>
               {isSidebarOpen && (
                 <div className="leading-tight overflow-hidden">
-                  <span className="font-extrabold text-base text-slate-900 tracking-tight block">
+                  <div className="font-black tracking-tight text-white block">
                     LangThang
-                  </span>
+                  </div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                    Admin Cấp 1
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Unique Collapse/Expand button on Desktop */}
+            {/* Collapse/Expand button */}
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
+              className="p-1.5 rounded-lg text-emerald-400/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
               title={isSidebarOpen ? "Thu gọn menu" : "Mở rộng menu"}
             >
               {isSidebarOpen ? <PanelLeftClose size={17} /> : <PanelLeftOpen size={17} />}
@@ -93,12 +99,12 @@ export default function AdminSidebar({
           </div>
 
           {/* Navigation Items */}
-          <div className="px-3.5 py-3 space-y-5 flex-1 overflow-y-auto text-xs scrollbar-none">
+          <div className="px-3 py-3 space-y-4 flex-1 overflow-y-auto text-xs scrollbar-none">
             {/* NHÓM 1: MENU CHÍNH */}
             <div className="space-y-1">
               {isSidebarOpen && (
-                <div className="px-3 pt-1 pb-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                  Menu
+                <div className="px-3 pt-1 pb-1.5 text-[10px] font-black text-emerald-300/60 uppercase tracking-wider">
+                  Menu Điều Hành
                 </div>
               )}
 
@@ -108,6 +114,7 @@ export default function AdminSidebar({
                 { id: "proposals", label: "Đề xuất đóng góp", icon: ClipboardCheck, count: pendingProposalsCount, isAlert: pendingProposalsCount > 0 },
                 { id: "reviews_comments", label: "Đánh giá & Bình luận", icon: MessageSquare, count: reportedReviewsCount, isAlert: reportedReviewsCount > 0 },
                 { id: "reports", label: "Báo cáo vi phạm", icon: ShieldAlert, count: pendingReportsCount, isAlert: pendingReportsCount > 0 },
+                { id: "users", label: "Người dùng & Uy tín", icon: Users },
               ].map((item) => {
                 const IconComp = item.icon;
                 const isActive = mainTab === item.id;
@@ -119,34 +126,34 @@ export default function AdminSidebar({
                       setSelectedPlaceId(null);
                     }}
                     className={`w-full group flex items-center ${
-                      isSidebarOpen ? "justify-between px-3.5" : "justify-center px-0"
+                      isSidebarOpen ? "justify-between px-3" : "justify-center px-0"
                     } py-2.5 rounded-xl font-semibold transition-all duration-150 cursor-pointer ${
                       isActive
-                        ? "bg-[#2563EB] text-white font-bold shadow-md shadow-blue-500/20"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                        ? "bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-600/30"
+                        : "text-emerald-100/80 hover:text-white hover:bg-white/10"
                     }`}
                     title={!isSidebarOpen ? item.label : undefined}
                   >
-                    <span className="flex items-center gap-3">
+                    <span className="flex items-center gap-3 min-w-0">
                       <IconComp
-                        size={18}
+                        size={16}
                         className={
                           isActive
                             ? "text-white"
-                            : "text-slate-400 group-hover:text-slate-600 transition-colors"
+                            : "text-emerald-400/80 group-hover:text-emerald-300 transition-colors"
                         }
                       />
-                      {isSidebarOpen && <span className="truncate text-sm">{item.label}</span>}
+                      {isSidebarOpen && <span className="truncate text-xs">{item.label}</span>}
                     </span>
 
                     {isSidebarOpen && item.count !== undefined && item.count > 0 && (
                       <span
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-extrabold ${
+                        className={`text-[9px] px-2 py-0.5 rounded-full font-extrabold ${
                           isActive
-                            ? "bg-white text-blue-600"
+                            ? "bg-white text-emerald-700"
                             : item.isAlert
                             ? "bg-rose-500 text-white"
-                            : "bg-slate-100 text-slate-600"
+                            : "bg-white/10 text-emerald-200"
                         }`}
                       >
                         {item.count}
@@ -160,8 +167,8 @@ export default function AdminSidebar({
             {/* NHÓM 2: QUẢN LÝ DỮ LIỆU */}
             <div className="space-y-1">
               {isSidebarOpen && (
-                <div className="px-3 pt-2 pb-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                  Nội dung vùng
+                <div className="px-3 pt-2 pb-1.5 text-[10px] font-black text-emerald-300/60 uppercase tracking-wider">
+                  Nội Dung Vùng
                 </div>
               )}
 
@@ -181,30 +188,30 @@ export default function AdminSidebar({
                       setSelectedPlaceId(null);
                     }}
                     className={`w-full group flex items-center ${
-                      isSidebarOpen ? "justify-between px-3.5" : "justify-center px-0"
+                      isSidebarOpen ? "justify-between px-3" : "justify-center px-0"
                     } py-2.5 rounded-xl font-semibold transition-all duration-150 cursor-pointer ${
                       isActive
-                        ? "bg-[#2563EB] text-white font-bold shadow-md shadow-blue-500/20"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                        ? "bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-600/30"
+                        : "text-emerald-100/80 hover:text-white hover:bg-white/10"
                     }`}
                     title={!isSidebarOpen ? item.label : undefined}
                   >
-                    <span className="flex items-center gap-3">
+                    <span className="flex items-center gap-3 min-w-0">
                       <IconComp
-                        size={18}
+                        size={16}
                         className={
                           isActive
                             ? "text-white"
-                            : "text-slate-400 group-hover:text-slate-600 transition-colors"
+                            : "text-emerald-400/80 group-hover:text-emerald-300 transition-colors"
                         }
                       />
-                      {isSidebarOpen && <span className="truncate text-sm">{item.label}</span>}
+                      {isSidebarOpen && <span className="truncate text-xs">{item.label}</span>}
                     </span>
 
-                    {isSidebarOpen && item.count !== undefined && (
+                    {isSidebarOpen && item.count !== undefined && item.count > 0 && (
                       <span
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                          isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
+                        className={`text-[9px] px-2 py-0.5 rounded-full font-semibold ${
+                          isActive ? "bg-white text-emerald-700 font-bold" : "bg-white/10 text-emerald-200"
                         }`}
                       >
                         {item.count}
@@ -218,13 +225,15 @@ export default function AdminSidebar({
             {/* NHÓM 3: HỆ THỐNG */}
             <div className="space-y-1">
               {isSidebarOpen && (
-                <div className="px-3 pt-2 pb-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                  Hệ thống
+                <div className="px-3 pt-2 pb-1.5 text-[10px] font-black text-emerald-300/60 uppercase tracking-wider">
+                  Hệ Thống
                 </div>
               )}
 
               {[
+                { id: "permissions", label: "Phân quyền & Tài khoản", icon: ShieldCheck },
                 { id: "categories", label: "Danh mục hệ thống", icon: Layers },
+                { id: "settings", label: "Cấu hình hệ thống", icon: Settings2 },
                 { id: "notifications_profile", label: "Thông báo & Hồ sơ", icon: Bell, count: 3, isAlert: true },
                 { id: "audit_logs", label: "Nhật ký kiểm toán", icon: History, count: auditLogsCount },
               ].map((item) => {
@@ -238,30 +247,30 @@ export default function AdminSidebar({
                       setSelectedPlaceId(null);
                     }}
                     className={`w-full group flex items-center ${
-                      isSidebarOpen ? "justify-between px-3.5" : "justify-center px-0"
+                      isSidebarOpen ? "justify-between px-3" : "justify-center px-0"
                     } py-2.5 rounded-xl font-semibold transition-all duration-150 cursor-pointer ${
                       isActive
-                        ? "bg-[#2563EB] text-white font-bold shadow-md shadow-blue-500/20"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                        ? "bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-600/30"
+                        : "text-emerald-100/80 hover:text-white hover:bg-white/10"
                     }`}
                     title={!isSidebarOpen ? item.label : undefined}
                   >
-                    <span className="flex items-center gap-3">
+                    <span className="flex items-center gap-3 min-w-0">
                       <IconComp
-                        size={18}
+                        size={16}
                         className={
                           isActive
                             ? "text-white"
-                            : "text-slate-400 group-hover:text-slate-600 transition-colors"
+                            : "text-emerald-400/80 group-hover:text-emerald-300 transition-colors"
                         }
                       />
-                      {isSidebarOpen && <span className="truncate text-sm">{item.label}</span>}
+                      {isSidebarOpen && <span className="truncate text-xs">{item.label}</span>}
                     </span>
 
                     {isSidebarOpen && item.count !== undefined && item.count > 0 && (
                       <span
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                          isActive ? "bg-white text-blue-600" : "bg-slate-100 text-slate-600"
+                        className={`text-[9px] px-2 py-0.5 rounded-full font-bold ${
+                          isActive ? "bg-white text-emerald-700" : "bg-white/10 text-emerald-200"
                         }`}
                       >
                         {item.count}
@@ -273,16 +282,28 @@ export default function AdminSidebar({
             </div>
           </div>
 
-          {/* Log Out Button */}
-          <div className="p-3.5 border-t border-slate-100 shrink-0">
+          {/* Action Buttons Footer */}
+          <div className="p-3 border-t border-emerald-900/60 bg-[#031d16] space-y-1 shrink-0">
+            {onOpenSystemAdmin && (
+              <button
+                onClick={onOpenSystemAdmin}
+                className={`w-full flex items-center ${
+                  isSidebarOpen ? "gap-3 px-3" : "justify-center px-0"
+                } py-2.5 rounded-xl text-left text-xs font-semibold text-emerald-300 hover:bg-white/10 hover:text-white transition cursor-pointer`}
+                title="Chuyển sang System Admin"
+              >
+                <ArrowLeftRight size={16} className="text-emerald-400" />
+                {isSidebarOpen && <span>Chuyển sang System Admin</span>}
+              </button>
+            )}
             <button
               onClick={onBackToUserView}
               className={`w-full flex items-center ${
-                isSidebarOpen ? "gap-3 px-3.5" : "justify-center px-0"
-              } py-2.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-semibold text-xs transition-colors cursor-pointer`}
+                isSidebarOpen ? "gap-3 px-3" : "justify-center px-0"
+              } py-2.5 rounded-xl text-emerald-400/70 hover:text-rose-400 hover:bg-white/10 font-semibold text-xs transition-colors cursor-pointer`}
               title="Về trang khách"
             >
-              <LogOut size={17} className="text-slate-500" />
+              <LogOut size={16} />
               {isSidebarOpen && <span>Thoát ra trang khách</span>}
             </button>
           </div>

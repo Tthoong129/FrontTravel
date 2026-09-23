@@ -1,10 +1,12 @@
-import { X, Plus, MapPin } from "lucide-react";
+import React from "react";
+import { X, Save } from "lucide-react";
 import ImageUploader from "../components/ImageUploader";
 
-interface AddPlaceModalProps {
+interface EditPlaceModalProps {
   isOpen: boolean;
   onClose: () => void;
   form: {
+    id: number;
     name: string;
     category: string;
     province: string;
@@ -20,13 +22,13 @@ interface AddPlaceModalProps {
   onSubmit: () => void;
 }
 
-export default function AddPlaceModal({
+export default function EditPlaceModal({
   isOpen,
   onClose,
   form,
   setForm,
   onSubmit,
-}: AddPlaceModalProps) {
+}: EditPlaceModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -35,10 +37,10 @@ export default function AddPlaceModal({
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
             <h3 className="font-bold text-base text-slate-900 tracking-tight">
-              Thêm địa điểm số hóa mới
+              Chỉnh sửa địa điểm
             </h3>
             <p className="text-slate-400 text-xs mt-0.5">
-              Tạo và công khai địa điểm trực tiếp trên hệ thống bản đồ
+              Cập nhật thông tin địa điểm đang có trên hệ thống
             </p>
           </div>
           <button
@@ -86,6 +88,8 @@ export default function AddPlaceModal({
               <option value="Nhà hàng & Quán ăn">Nhà hàng &amp; Quán ăn</option>
               <option value="Quán Cà phê & Trà">Quán Cà phê &amp; Trà</option>
               <option value="Ẩm thực đường phố">Ẩm thực đường phố</option>
+              <option value="Điểm tham quan">Điểm tham quan</option>
+              <option value="Lưu trú">Lưu trú</option>
             </select>
           </div>
 
@@ -174,10 +178,10 @@ export default function AddPlaceModal({
           </button>
           <button
             onClick={onSubmit}
-            className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-medium cursor-pointer transition-colors shadow-xs flex items-center gap-1.5"
+            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium cursor-pointer transition-colors shadow-xs flex items-center gap-1.5"
           >
-            <Plus size={14} />
-            <span>Tạo địa điểm</span>
+            <Save size={14} />
+            <span>Lưu thay đổi</span>
           </button>
         </div>
       </div>

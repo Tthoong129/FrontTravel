@@ -593,10 +593,10 @@ export default function App() {
               setActiveNav("Admin Cấp 1");
               showToast("Mở Cổng Quản Trị Danh Mục (CLO3)...");
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 shadow-2xs transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 shadow-2xs transition-all cursor-pointer"
             title="Mở giao diện Quản trị viên Cấp 1"
           >
-            <ShieldCheck size={14} className="text-blue-600" />
+            <ShieldCheck size={14} className="text-emerald-700" />
             <span className="hidden sm:inline">Admin Portal</span>
             <span className="sm:hidden">Admin</span>
           </button>
@@ -607,7 +607,7 @@ export default function App() {
               setActiveNav("System Admin");
               showToast("Mở Trung tâm điều hành System Admin...");
             }}
-            className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 shadow-2xs transition-all cursor-pointer"
+            className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 shadow-2xs transition-all cursor-pointer"
             title="Mở giao diện System Admin"
           >
             <Shield size={14} className="text-emerald-700" />
@@ -1090,6 +1090,10 @@ export default function App() {
           onBackToUserView={() => {
             setActiveNav("Trang chủ");
             showToast("Đã quay về giao diện người dùng du lịch.");
+          }}
+          onOpenSystemAdmin={() => {
+            setActiveNav("System Admin");
+            showToast("Đã chuyển sang Trung tâm điều hành System Admin.");
           }}
           showToast={showToast}
         />

@@ -3,22 +3,30 @@ import { places as seededPlaces } from "./data";
 import PermissionsTab from "./admin/tabs/PermissionsTab";
 import SystemReportsTab from "./admin/tabs/SystemReportsTab";
 import SystemSettingsTab from "./admin/tabs/SystemSettingsTab";
+import DashboardTab from "./admin/tabs/DashboardTab";
+import UsersTab from "./admin/tabs/UsersTab";
+import SystemRegionsTab from "./admin/tabs/SystemRegionsTab";
+import SystemTaxonomyTab from "./admin/tabs/SystemTaxonomyTab";
+import SystemFoodsTab from "./admin/tabs/SystemFoodsTab";
 import { initialAdminBlogs, initialAdminProposals, initialAdminReports } from "./adminData";
 import {
   Activity,
   AlertTriangle,
   ArrowLeftRight,
+  Award,
   BarChart3,
   Bell,
+  BookOpen,
   Check,
-  ClipboardCheck,
+  CheckCircle2,
   ChevronDown,
+  ClipboardCheck,
   Database,
   FileClock,
   Filter,
-  Globe2,
-  BookOpen,
+  Flame,
   FolderHeart,
+  Globe2,
   LayoutDashboard,
   LockKeyhole,
   MapPin,
@@ -26,11 +34,14 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Plus,
+  RefreshCw,
   Save,
   Search,
   Settings2,
   ShieldCheck,
   SlidersHorizontal,
+  Star,
+  TrendingUp,
   Utensils,
   UserCog,
   Users,
@@ -108,12 +119,28 @@ function Badge({ children, tone = "slate" }: { children: React.ReactNode; tone?:
   return <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold ${colors[tone]}`}>{children}</span>;
 }
 
-function MetricCard({ label, value, note, icon: Icon, accent }: { label: string; value: string; note: string; icon: typeof Users; accent: string }) {
-  return <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-    <div className="flex items-start justify-between"><span className="text-xs font-semibold text-slate-500">{label}</span><div className={`rounded-lg p-2 ${accent}`}><Icon size={16} /></div></div>
-    <div className="mt-3 text-xl font-black tracking-tight text-slate-900">{value}</div>
-    <p className="mt-1 text-[11px] text-slate-400">{note}</p>
-  </div>;
+function MetricCard({ label, value, note, icon: Icon, accent, trend }: { label: string; value: string; note: string; icon: typeof Users; accent: string; trend?: string }) {
+  return (
+    <div className="relative group overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+      <div className="flex items-start justify-between">
+        <div>
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{label}</span>
+          <div className="mt-2 text-2xl sm:text-3xl font-black tracking-tight text-slate-900">{value}</div>
+        </div>
+        <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-2xs transition-transform group-hover:scale-105 ${accent}`}>
+          <Icon size={20} />
+        </div>
+      </div>
+      <div className="mt-3 flex items-center justify-between gap-2 pt-2.5 border-t border-slate-100 text-xs">
+        <span className="text-[11px] text-slate-500 font-medium truncate">{note}</span>
+        {trend && (
+          <span className="inline-flex items-center gap-0.5 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60 shrink-0">
+            {trend}
+          </span>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function ContentManagementTab({ tab, onNotify }: { tab: Exclude<SystemTab, "overview" | "users" | "admins" | "master_data" | "complaints" | "audit" | "settings">; onNotify: (message: string) => void }) {
@@ -165,8 +192,8 @@ function ContentManagementTab({ tab, onNotify }: { tab: Exclude<SystemTab, "over
             <span className="text-slate-600">{data.title}</span>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => onNotify(`Đã xuất dữ liệu ${data.title} dạng CSV.`)} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-[11px] font-bold text-slate-600">Xuất CSV</button>
-            <button onClick={openCreate} className="inline-flex items-center gap-2 rounded-xl bg-[#0F2742] px-4 py-2.5 text-[11px] font-bold text-white shadow-sm"><Plus size={15} />Thêm mới</button>
+            <button onClick={() => onNotify(`Đã xuất dữ liệu ${data.title} dạng CSV.`)} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-[11px] font-bold text-slate-600 hover:bg-slate-50">Xuất CSV</button>
+            <button onClick={openCreate} className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-2.5 text-[11px] font-bold text-white shadow-sm transition"><Plus size={15} />Thêm mới</button>
           </div>
         </div>
 
@@ -181,9 +208,9 @@ function ContentManagementTab({ tab, onNotify }: { tab: Exclude<SystemTab, "over
           <div className="flex flex-wrap items-center gap-3 pb-4">
             <div className="relative min-w-[260px] flex-1">
               <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-xs text-slate-700 outline-none transition focus:border-[#0F2742] focus:bg-white" placeholder={`Tìm trong ${data.title.toLowerCase()}...`} />
+              <input className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-xs text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white" placeholder={`Tìm trong ${data.title.toLowerCase()}...`} />
             </div>
-            <button onClick={() => onNotify("Đã mở bộ lọc trạng thái và phạm vi.")} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[11px] font-bold text-slate-600">
+            <button onClick={() => onNotify("Đã mở bộ lọc trạng thái và phạm vi.")} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[11px] font-bold text-slate-600 hover:bg-slate-50">
               <Filter size={14} />Bộ lọc
             </button>
             <span className="ml-auto text-[11px] font-semibold text-slate-400">{data.count}</span>
@@ -219,12 +246,12 @@ function ContentManagementTab({ tab, onNotify }: { tab: Exclude<SystemTab, "over
                       <td className="px-5 py-4 font-medium text-slate-600">{row.featured}</td>
                       <td className="px-5 py-4 font-semibold text-slate-800">{row.count}</td>
                       <td className="px-5 py-4">{renderStatusBadge(row.status)}</td>
-                      <td className="px-5 py-4 text-right"><button onClick={() => openDetail(row.name, row.status)} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-bold text-slate-600 hover:border-[#0F2742] hover:text-[#0F2742]">Chi tiết</button></td>
+                      <td className="px-5 py-4 text-right"><button onClick={() => openDetail(row.name, row.status)} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-bold text-slate-600 hover:border-emerald-600 hover:text-emerald-600 transition">Chi tiết</button></td>
                     </tr>
                   )) : data.rows.map((row) => (
                     <tr key={row[0]} className="hover:bg-slate-50/70">
                       {row.map((cell, index) => <td key={`${row[0]}-${index}`} className={`px-4 py-3 ${index === 0 ? "font-bold text-slate-900" : "text-slate-600"}`}>{index === row.length - 1 ? renderStatusBadge(cell) : cell}</td>)}
-                      <td className="px-4 py-3 text-right"><button onClick={() => openDetail(row[0], row[row.length - 1])} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-bold text-slate-600 hover:border-[#0F2742] hover:text-[#0F2742]">Chi tiết</button></td>
+                      <td className="px-4 py-3 text-right"><button onClick={() => openDetail(row[0], row[row.length - 1])} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-bold text-slate-600 hover:border-emerald-600 hover:text-emerald-600 transition">Chi tiết</button></td>
                     </tr>
                   ))}
                 </tbody>
@@ -362,101 +389,118 @@ export default function SystemAdminPortal({ onBackToUserView, onOpenCategoryAdmi
     priority: proposal.province.includes("Đà") ? "Cao" : "Thường",
   }));
 
-  return <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex font-sans antialiased">
-    {sidebarOpen && <div className="fixed inset-0 z-30 bg-slate-950/30 lg:hidden" onClick={() => setSidebarOpen(false)} />}
-    <aside className={`${sidebarOpen ? "w-64 translate-x-0" : "-translate-x-full lg:w-20 lg:translate-x-0"} fixed lg:sticky top-0 z-40 flex h-screen shrink-0 flex-col overflow-hidden border-r border-slate-200/80 bg-white text-slate-800 shadow-[2px_0_12px_rgba(0,0,0,0.02)] transition-all duration-300`}>
-      <div className="flex h-16 items-center justify-between border-b border-slate-100 px-5">
-        <div className="flex items-center gap-3"><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0F2742] text-[10px] font-black text-white">LT</div>{sidebarOpen && <div><div className="font-black tracking-tight text-slate-900">LangThang</div><div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">System Admin</div></div>}</div>
-        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700" title="Thu gọn menu">{sidebarOpen ? <PanelLeftClose size={17} /> : <PanelLeftOpen size={17} />}</button>
+  return <div className="min-h-screen bg-[#F1F5F9] text-slate-800 flex font-sans antialiased">
+    {sidebarOpen && <div className="fixed inset-0 z-30 bg-slate-950/40 backdrop-blur-xs lg:hidden" onClick={() => setSidebarOpen(false)} />}
+    <aside className={`${sidebarOpen ? "w-64 translate-x-0" : "-translate-x-full lg:w-20 lg:translate-x-0"} fixed lg:sticky top-0 z-40 flex h-screen shrink-0 flex-col overflow-hidden border-r border-emerald-900/60 bg-[#06281E] text-emerald-100 shadow-[4px_0_24px_rgba(0,0,0,0.22)] transition-all duration-300`}>
+      <div className="flex h-16 items-center justify-between border-b border-emerald-900/60 px-5 bg-[#031d16]">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500 text-[10px] font-black text-white shadow-md shadow-emerald-500/40">LT</div>
+          {sidebarOpen && <div><div className="font-black tracking-tight text-white">LangThang</div><div className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">System Admin</div></div>}
+        </div>
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="rounded-lg p-1.5 text-emerald-400/80 hover:bg-white/10 hover:text-white transition cursor-pointer" title="Thu gọn menu">{sidebarOpen ? <PanelLeftClose size={17} /> : <PanelLeftOpen size={17} />}</button>
       </div>
-      <div className="flex-1 overflow-y-auto px-3 py-5">
-        {sidebarOpen && <div className="mb-3 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">Quản trị toàn hệ thống</div>}
-        <div className="space-y-4">{navGroups.map((group) => <div key={group.label} className="space-y-1">{sidebarOpen && <div className="px-3 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400">{group.label}</div>}{group.items.map(({ id, label, icon: Icon, count }) => <button key={id} onClick={() => { setActiveTab(id); setSelectedAdmin(null); setSelectedUser(null); setSelectedComplaint(null); }} className={`group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-xs font-semibold transition ${activeTab === id ? "bg-[#0F2742] text-white shadow-md shadow-slate-900/15" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"}`} title={!sidebarOpen ? label : undefined}><Icon size={16} className={activeTab === id ? "text-white" : "text-slate-400 group-hover:text-slate-600"} />{sidebarOpen && <span className="truncate">{label}</span>}{sidebarOpen && count && <span className={`ml-auto rounded-full px-1.5 py-0.5 text-[9px] ${activeTab === id ? "bg-white text-slate-800" : "bg-rose-50 text-rose-600"}`}>{count}</span>}</button>)}</div>)}</div>
+      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4 scrollbar-none">
+        {sidebarOpen && <div className="px-3 text-[10px] font-black uppercase tracking-wider text-emerald-300/80">Quản trị toàn hệ thống</div>}
+        <div className="space-y-4">
+          {navGroups.map((group) => (
+            <div key={group.label} className="space-y-1">
+              {sidebarOpen && <div className="px-3 pb-1 text-[10px] font-black uppercase tracking-wider text-emerald-300/60">{group.label}</div>}
+              {group.items.map(({ id, label, icon: Icon, count }) => (
+                <button
+                  key={id}
+                  onClick={() => { setActiveTab(id); setSelectedAdmin(null); setSelectedUser(null); setSelectedComplaint(null); }}
+                  className={`group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-semibold transition cursor-pointer ${
+                    activeTab === id
+                      ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 font-bold"
+                      : "text-emerald-100/80 hover:bg-white/10 hover:text-white"
+                  }`}
+                  title={!sidebarOpen ? label : undefined}
+                >
+                  <Icon size={16} className={activeTab === id ? "text-white" : "text-emerald-400/80 group-hover:text-emerald-300 transition-colors"} />
+                  {sidebarOpen && <span className="truncate">{label}</span>}
+                  {sidebarOpen && count && (
+                    <span className={`ml-auto rounded-full px-2 py-0.5 text-[9px] font-extrabold ${activeTab === id ? "bg-white text-emerald-700" : "bg-rose-500 text-white"}`}>
+                      {count}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="border-t border-slate-100 p-3"><button onClick={onOpenCategoryAdmin} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900"><ArrowLeftRight size={16} />{sidebarOpen && <span>Chuyển sang Admin cấp 1</span>}</button><button onClick={onBackToUserView} className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900"><X size={16} />{sidebarOpen && <span>Về trang người dùng</span>}</button></div>
+      <div className="border-t border-emerald-900/60 bg-[#031d16] p-3 space-y-1">
+        <button onClick={onOpenCategoryAdmin} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-semibold text-emerald-300 hover:bg-white/10 hover:text-white transition cursor-pointer"><ArrowLeftRight size={16} className="text-emerald-400" />{sidebarOpen && <span>Chuyển sang Admin cấp 1</span>}</button>
+        <button onClick={onBackToUserView} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-semibold text-emerald-400/70 hover:bg-white/10 hover:text-rose-400 transition cursor-pointer"><X size={16} />{sidebarOpen && <span>Về trang người dùng</span>}</button>
+      </div>
     </aside>
 
     <div className="min-w-0 flex-1">
       <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-5 backdrop-blur-md sm:px-6">
-        <div className="flex items-center gap-3"><button onClick={() => setSidebarOpen(!sidebarOpen)} className="rounded-xl border border-slate-200 p-2 text-slate-600 lg:hidden"><Menu size={18} /></button><div><div className="text-[11px] font-semibold text-slate-400">Điều phối / {currentLabel}</div><h1 className="mt-0.5 text-base font-black tracking-tight text-slate-900">{activeTab === "overview" ? "Dashboard tổng quan" : currentLabel}</h1></div></div>
+        <div className="flex items-center gap-3"><button onClick={() => setSidebarOpen(!sidebarOpen)} className="rounded-xl border border-slate-200 p-2 text-slate-600 lg:hidden"><Menu size={18} /></button><div className="flex items-center gap-2 text-xs font-medium"><span className="text-slate-400">Hệ thống</span><span className="text-slate-300">/</span><span className="font-bold text-slate-900">{currentLabel}</span></div></div>
         <div className="flex items-center gap-3 sm:gap-5"><div className="relative hidden w-64 sm:block"><Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><input value={searchText} onChange={(event) => setSearchText(event.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-xs outline-none focus:border-blue-500 focus:bg-white" placeholder="Tìm ID, người dùng, nội dung..." /></div><div className="relative"><button onClick={() => setNotificationsOpen((prev) => !prev)} className="relative rounded-xl p-2 text-slate-500 hover:bg-slate-100"><Bell size={18} />{unreadNotifications > 0 && <span className="absolute right-1.5 top-1.5 min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white">{unreadNotifications > 9 ? "9+" : unreadNotifications}</span>}</button>{notificationsOpen && <div className="absolute right-0 top-12 z-50 w-[360px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.12)]"><div className="flex items-center justify-between border-b border-slate-100 px-4 py-3"><div><div className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Thông báo</div><div className="mt-1 text-sm font-bold text-slate-900">{unreadNotifications} tin chưa đọc</div></div><button onClick={() => { setNotifications((items) => items.map((item) => ({ ...item, unread: false }))); notify("Đã đánh dấu tất cả thông báo là đã đọc."); }} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1.5 text-[10px] font-bold text-slate-600 hover:border-slate-300">Đọc hết</button></div><div className="max-h-[360px] overflow-y-auto">{notifications.map((item) => <button key={item.id} onClick={() => { setNotifications((items) => items.map((entry) => entry.id === item.id ? { ...entry, unread: false } : entry)); setNotificationsOpen(false); notify(`${item.title}: ${item.detail}`); }} className={`flex w-full items-start gap-3 border-b border-slate-100 px-4 py-3 text-left transition ${item.unread ? "bg-amber-50/40" : "bg-white"}`}><div className={`mt-1 h-2.5 w-2.5 rounded-full ${item.unread ? "bg-rose-500" : "bg-slate-300"}`} /><div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-3"><span className="text-sm font-bold text-slate-800">{item.title}</span><span className="rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-bold text-slate-500">{item.level}</span></div><p className="mt-1 text-xs leading-5 text-slate-500">{item.detail}</p><div className="mt-2 flex items-center justify-between text-[10px] text-slate-400"><span>{item.time}</span><span className="font-semibold text-slate-500">Chi tiết</span></div></div></button>)}</div></div>}</div><div className="flex items-center gap-2 border-l border-slate-200 pl-3"><div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-xs font-black text-white">MA</div><div className="hidden leading-tight md:block"><div className="text-xs font-bold text-slate-900">Nguyễn Minh Anh</div><div className="text-[10px] font-semibold text-slate-400">System Admin</div></div></div></div>
       </header>
 
       <main className="mx-auto w-full max-w-[1600px] space-y-4 p-5 sm:p-6">
-        {(["regions", "taxonomy", "foods", "places", "collections", "blogs"] as const).includes(activeTab as "regions" | "taxonomy" | "foods" | "places" | "collections" | "blogs") && <ContentManagementTab tab={activeTab as "regions" | "taxonomy" | "foods" | "places" | "collections" | "blogs"} onNotify={notify} />}
+        {activeTab === "regions" && <SystemRegionsTab onNotify={notify} />}
+        {activeTab === "taxonomy" && <SystemTaxonomyTab onNotify={notify} />}
+        {activeTab === "foods" && <SystemFoodsTab onNotify={notify} />}
 
-        {activeTab === "overview" && <>
-          <div className="flex flex-wrap items-end justify-between gap-4"><div><div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-wider text-blue-600"><Activity size={14} />Tổng quan hệ thống</div><h2 className="mt-2 text-3xl font-black tracking-tight text-slate-950">Toàn cảnh hoạt động LangThang</h2><p className="mt-1 text-sm text-slate-500">Theo dõi người dùng, nội dung, hàng chờ và phạm vi quản trị trên toàn hệ thống.</p></div><button onClick={() => notify("Đã xuất báo cáo tổng quan dạng CSV.")} className="inline-flex items-center gap-2 rounded-xl bg-[#2563EB] px-4 py-2.5 text-xs font-bold text-white hover:bg-blue-700"><BarChart3 size={15} />Xuất báo cáo</button></div>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><MetricCard label="Địa điểm đang quản lý" value={totalPlaces} note={`${pendingPlaces} mục chờ kiểm duyệt`} icon={MapPin} accent="bg-blue-50 text-blue-700" /><MetricCard label="Đề xuất chờ xử lý" value={pendingProposals} note={`${initialAdminProposals.length} đề xuất đang tải`} icon={ClipboardCheck} accent="bg-amber-50 text-amber-700" /><MetricCard label="Báo cáo tồn đọng" value={pendingReports} note={`${initialAdminReports.length} báo cáo đang tải`} icon={AlertTriangle} accent="bg-rose-50 text-rose-700" /><MetricCard label="Cẩm nang đã tải" value={publishedBlogs} note="Dữ liệu từ Blogs trong portal" icon={BookOpen} accent="bg-emerald-50 text-emerald-700" /></div>
+        {(["places", "collections", "blogs"] as const).includes(activeTab as "places" | "collections" | "blogs") && <ContentManagementTab tab={activeTab as "places" | "collections" | "blogs"} onNotify={notify} />}
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <h3 className="font-black text-slate-900">Nội dung cần xử lý trong ngày</h3>
-                <p className="mt-1 text-xs text-slate-400">Dữ liệu lấy trực tiếp từ danh sách địa điểm và đề xuất đang lưu trong hệ thống.</p>
-              </div>
-              <button onClick={() => setActiveTab("places")} className="text-xs font-bold text-emerald-700">Xem toàn bộ →</button>
-            </div>
-            <div className="mt-5 grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
-              {dashboardWatchlist.map((item) => (
-                <div key={item.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
-                  <img src={item.image} alt={item.title} className="h-28 w-full object-cover" />
-                  <div className="space-y-2 p-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="text-sm font-black text-slate-900">{item.title}</div>
-                        <div className="mt-1 text-[10px] uppercase tracking-[0.12em] text-slate-400">{item.category}</div>
-                      </div>
-                      <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${item.status === "Chờ duyệt" ? "bg-amber-100 text-amber-700" : "bg-slate-200 text-slate-600"}`}>{item.status}</span>
-                    </div>
-                    <div className="text-[11px] text-slate-500">{item.province} · {item.owner}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <div className="grid gap-6 xl:grid-cols-[1.45fr_1fr]"><section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center justify-between"><div><h3 className="font-black text-slate-900">Sức khỏe theo miền</h3><p className="mt-1 text-xs text-slate-400">Độ phủ quản trị và khối lượng đang chờ xử lý</p></div><button onClick={() => setActiveTab("admins")} className="text-xs font-bold text-emerald-700">Xem phạm vi →</button></div><div className="mt-6 space-y-5">{regionRows.map(({ name, places }) => { const coverage = name === "Miền Bắc" ? "92%" : name === "Miền Trung" ? "78%" : "86%"; const backlog = name === "Miền Bắc" ? "18" : name === "Miền Trung" ? "43" : "25"; const color = name === "Miền Bắc" ? "bg-emerald-500" : name === "Miền Trung" ? "bg-amber-500" : "bg-blue-500"; return <div key={name}><div className="mb-2 flex items-center justify-between text-xs"><span className="font-bold text-slate-700">{name}</span><span className="text-slate-400">{coverage} phủ · {backlog} tồn đọng</span></div><div className="h-2 overflow-hidden rounded-full bg-slate-100"><div className={`h-full rounded-full ${color}`} style={{ width: coverage }} /></div><div className="mt-2 text-[10px] font-semibold text-slate-400">{places} địa điểm đang quản lý</div></div>; })}</div></section><section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center justify-between"><div><h3 className="font-black text-slate-900">Cảnh báo cần chú ý</h3><p className="mt-1 text-xs text-slate-400">Tự động từ các ngưỡng trong SystemSettings</p></div><AlertTriangle size={18} className="text-amber-500" /></div><div className="mt-5 space-y-3">{[["Ô Miền Trung × Ẩm thực chưa có người phụ trách", "Phân quyền", "amber"], ["Tài khoản spam có 89 nội dung bị báo cáo", "Người dùng", "red"], ["SLA khiếu nại KN-2026-091 còn 3 giờ", "Khiếu nại", "blue"]].map(([title, tag, tone]) => <button key={title} onClick={() => setActiveTab(tag === "Phân quyền" ? "admins" : tag === "Người dùng" ? "users" : "complaints")} className="flex w-full items-start gap-3 rounded-xl bg-slate-50 p-3 text-left hover:bg-slate-100"><span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${tone === "red" ? "bg-rose-500" : tone === "amber" ? "bg-amber-500" : "bg-blue-500"}`} /><span className="flex-1 text-xs font-semibold leading-relaxed text-slate-700">{title}<span className="mt-1 block text-[10px] font-bold text-slate-400">{tag}</span></span><ChevronDown size={14} className="-rotate-90 text-slate-400" /></button>)}</div></section></div>
-
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <h3 className="font-black text-slate-900">Review queue</h3>
-                <p className="mt-1 text-xs text-slate-400">Các đề xuất mới cần duyệt trong phạm vi admin cấp 1 và hệ thống.</p>
-              </div>
-              <button onClick={() => setActiveTab("complaints")} className="text-xs font-bold text-slate-600">Xem toàn bộ →</button>
-            </div>
-            <div className="mt-5 grid gap-4 lg:grid-cols-3">
-              {reviewQueue.map((item) => (
-                <div key={item.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
-                  <img src={item.image} alt={item.title} className="h-32 w-full object-cover" />
-                  <div className="space-y-2 p-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className={`rounded-full px-2 py-1 text-[9px] font-bold ${item.priority === "Cao" ? "bg-rose-100 text-rose-700" : "bg-blue-100 text-blue-700"}`}>{item.priority}</span>
-                      <span className="text-[10px] text-slate-400">{item.age}</span>
-                    </div>
-                    <div className="text-sm font-black text-slate-900">{item.title}</div>
-                    <div className="text-[11px] text-slate-500">{item.subtitle}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center justify-between"><div><h3 className="font-black text-slate-900">Hoạt động gần đây</h3><p className="mt-1 text-xs text-slate-400">Dòng mới nhất từ AdminActionLogs</p></div><button onClick={() => setActiveTab("audit")} className="text-xs font-bold text-emerald-700">Mở audit log →</button></div><div className="mt-4 grid gap-3 md:grid-cols-2">{auditRows.slice(0, 4).map((row) => <div key={`${row[0]}-${row[3]}`} className="flex items-center gap-3 rounded-xl border border-slate-100 p-3"><div className="rounded-lg bg-emerald-50 p-2 text-emerald-700"><Check size={14} /></div><div className="min-w-0 flex-1"><div className="truncate text-xs font-bold text-slate-800">{row[1]} · {row[2]}</div><div className="mt-1 text-[10px] text-slate-400">{row[3]} · {row[0]}</div></div><Badge tone="green">{row[5]}</Badge></div>)}</div></section>
-        </>}
+        {activeTab === "overview" && (
+          <DashboardTab
+            currentAdminInfo={{
+              adminId: 12,
+              adminName: "Nguyễn Minh Anh",
+              email: "minhanh@langthang.vn",
+              region: "Toàn quốc (63 Tỉnh)",
+              managedCategories: ["Ẩm thực & Quán ăn", "Khách sạn & Homestay", "Điểm tham quan"],
+              assignedProvinces: ["Hà Nội", "Đà Nẵng", "TP. Hồ Chí Minh", "Quảng Nam", "Thừa Thiên Huế", "Lào Cai", "Lâm Đồng"],
+            }}
+            places={seededPlaces}
+            proposals={initialAdminProposals}
+            reports={initialAdminReports}
+            reportedReviews={[]}
+            auditLogs={[]}
+            dashRegion="Toàn quốc"
+            setDashRegion={() => {}}
+            dashProvince="all"
+            setDashProvince={() => {}}
+            dashTimeRange="30days"
+            setDashTimeRange={() => {}}
+            setMainTab={(tab) => {
+              if (tab === "places") setActiveTab("places");
+              else if (tab === "proposals" || tab === "reports") setActiveTab("complaints");
+              else if (tab === "permissions") setActiveTab("admins");
+              else if (tab === "settings") setActiveTab("settings");
+              else if (tab === "audit_logs") setActiveTab("audit");
+              else if (tab === "foods") setActiveTab("foods");
+              else if (tab === "blogs") setActiveTab("blogs");
+              else if (tab === "collections") setActiveTab("collections");
+              else if (tab === "provinces") setActiveTab("regions");
+            }}
+            setPlaceFilterStatus={() => {}}
+            setProposalStatusFilter={() => {}}
+            setRevComTab={() => {}}
+            setRevReportFilter={() => {}}
+            setReportSubTab={() => {}}
+            setIsAddPlaceModalOpen={() => setGrantAdminOpen(true)}
+            showToast={notify}
+          />
+        )}
 
         {activeTab === "admins" && <PermissionsTab showToast={notify} />}
 
-        {activeTab === "users" && <section className="space-y-5"><div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-2xl font-black text-slate-950">Quản lý người dùng</h2><p className="mt-1 text-sm text-slate-500">Khóa, mở khóa, chỉnh uy tín và xử lý tài khoản spam theo Users/UserProfiles.</p></div><div className="flex gap-2"><button onClick={() => notify("Đã chọn 1 tài khoản để ẩn nội dung hàng loạt.")} className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-600">Ẩn nội dung hàng loạt</button><button onClick={() => notify("Đã gửi liên kết đặt lại mật khẩu.")} className="rounded-xl bg-[#063f38] px-3 py-2.5 text-xs font-bold text-white">Gửi reset password</button></div></div><div className="flex flex-wrap gap-2"><button className="rounded-lg bg-slate-900 px-3 py-2 text-xs font-bold text-white">Tất cả người dùng</button><button className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600">Đang xem xét (8)</button><button className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600">Đã khóa (23)</button></div><div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="overflow-x-auto"><table className="w-full min-w-[780px] text-left text-xs"><thead className="bg-slate-50 text-[10px] font-black uppercase tracking-wider text-slate-400"><tr><th className="px-5 py-3">Người dùng</th><th className="px-5 py-3">Cấp bậc</th><th className="px-5 py-3">Uy tín</th><th className="px-5 py-3">Hoạt động gần đây</th><th className="px-5 py-3">Trạng thái</th><th className="px-5 py-3 text-right">Xử lý</th></tr></thead><tbody className="divide-y divide-slate-100">{userRows.map((user) => <tr key={user.id} className="hover:bg-slate-50/70"><td className="px-5 py-4"><div className="font-bold text-slate-900">{user.name}</div><div className="mt-1 text-[10px] text-slate-400">#{user.id} · {user.email}</div></td><td className="px-5 py-4 font-semibold text-slate-600">{user.rank}</td><td className="px-5 py-4"><div className="font-black text-slate-900">{user.reputation}/100</div><div className="mt-1 h-1.5 w-20 rounded-full bg-slate-100"><div className={`h-full rounded-full ${user.reputation < 20 ? "bg-rose-500" : "bg-emerald-500"}`} style={{ width: `${user.reputation}%` }} /></div></td><td className="px-5 py-4 text-slate-500">{user.activity}</td><td className="px-5 py-4"><Badge tone={user.status === "Hoạt động" ? "green" : "red"}>{user.status}</Badge></td><td className="px-5 py-4 text-right"><button onClick={() => setSelectedUser(selectedUser === user.id ? null : user.id)} className="rounded-lg border border-slate-200 px-3 py-1.5 text-[11px] font-bold text-slate-600">{selectedUser === user.id ? "Đóng" : "Hồ sơ"}</button></td></tr>)}</tbody></table></div>{selectedUser && <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50 p-4"><div className="text-xs font-bold text-slate-700">Thao tác với User #{selectedUser}<div className="mt-1 text-[10px] font-normal text-slate-400">Mọi hành động yêu cầu lý do và ghi nhật ký.</div></div><div className="flex flex-wrap gap-2"><button onClick={() => notify("Đã khóa tài khoản sau khi xác nhận lý do.")} className="rounded-lg bg-rose-600 px-3 py-2 text-[11px] font-bold text-white"><LockKeyhole size={13} className="mr-1 inline" />Khóa tài khoản</button><button onClick={() => notify("Đã cập nhật điểm uy tín thành công.")} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-bold text-slate-600">Chỉnh uy tín</button><button onClick={() => notify("Đã mở hồ sơ hoạt động người dùng.")} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-bold text-slate-600">Xem hoạt động</button></div></div>}</div></section>}
+        {activeTab === "users" && <UsersTab showToast={notify} />}
 
-        {activeTab === "master_data" && <section className="space-y-5"><div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-2xl font-black text-slate-950">Dữ liệu nền</h2><p className="mt-1 text-sm text-slate-500">Quản lý Regions, Provinces, PlaceTypes, Categories và ReportTypes.</p></div><button onClick={() => notify("Đã mở biểu mẫu thêm dữ liệu nền.")} className="inline-flex items-center gap-2 rounded-xl bg-[#e86922] px-4 py-2.5 text-xs font-bold text-white"><Plus size={15} />Thêm dữ liệu</button></div><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{[["Miền / Regions", "3", "1 nổi bật", Globe2], ["Tỉnh / thành", "63", "58 đang hiển thị", Database], ["Danh mục", "18", "2 chờ gộp", SlidersHorizontal], ["Loại báo cáo", "10", "9 đang bật", AlertTriangle]].map(([label, value, note, Icon]) => <MetricCard key={label as string} label={label as string} value={value as string} note={note as string} icon={Icon as typeof Users} accent="bg-emerald-50 text-emerald-700" />)}</div><div className="grid gap-5 lg:grid-cols-2"><div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center justify-between"><h3 className="font-black text-slate-900">Miền & tỉnh thành</h3><button onClick={() => notify("Đã sắp xếp lại thứ tự hiển thị.")} className="text-xs font-bold text-emerald-700">Sắp xếp</button></div><div className="mt-4 space-y-2">{[["Miền Bắc", "25 tỉnh", "Đang hiển thị", "green"], ["Miền Trung", "19 tỉnh", "Đang hiển thị", "green"], ["Miền Nam", "19 tỉnh", "1 tỉnh đang ẩn", "amber"]].map(([name, count, status, tone]) => <div key={name} className="flex items-center gap-3 rounded-xl border border-slate-100 p-3"><div className="rounded-lg bg-slate-100 p-2 text-slate-500"><Globe2 size={15} /></div><div className="flex-1"><div className="text-xs font-bold text-slate-800">{name}</div><div className="mt-1 text-[10px] text-slate-400">{count} · {status}</div></div><Badge tone={tone === "green" ? "green" : "amber"}>Đang dùng</Badge><button onClick={() => notify(`Đã mở chỉnh sửa ${name}.`)} className="text-[11px] font-bold text-slate-400 hover:text-emerald-700">Sửa</button></div>)}</div></div><div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center justify-between"><h3 className="font-black text-slate-900">Danh mục & loại báo cáo</h3><button onClick={() => notify("Đã mở trình quản lý danh mục.")} className="text-xs font-bold text-emerald-700">Quản lý</button></div><div className="mt-4 space-y-2">{[["Ẩm thực", "6 danh mục", "1.124 địa điểm"], ["Lưu trú", "5 danh mục", "328 địa điểm"], ["Điểm tham quan", "7 danh mục", "390 địa điểm"]].map(([name, categories, places]) => <div key={name} className="flex items-center gap-3 rounded-xl border border-slate-100 p-3"><div className="rounded-lg bg-orange-50 p-2 text-orange-600"><SlidersHorizontal size={15} /></div><div className="flex-1"><div className="text-xs font-bold text-slate-800">{name}</div><div className="mt-1 text-[10px] text-slate-400">{categories} · {places}</div></div><button onClick={() => notify(`Đã mở cảnh báo tác động cho ${name}.`)} className="text-[11px] font-bold text-slate-400 hover:text-emerald-700">Xem</button></div>)}</div></div></div></section>}
+        {activeTab === "master_data" && <section className="space-y-5"><div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-2xl font-black text-slate-950">Dữ liệu nền</h2><p className="mt-1 text-sm text-slate-500">Quản lý Regions, Provinces, PlaceTypes, Categories và ReportTypes.</p></div><button onClick={() => notify("Đã mở biểu mẫu thêm dữ liệu nền.")} className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition"><Plus size={15} />Thêm dữ liệu</button></div><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{[["Miền / Regions", "3", "1 nổi bật", Globe2], ["Tỉnh / thành", "63", "58 đang hiển thị", Database], ["Danh mục", "18", "2 chờ gộp", SlidersHorizontal], ["Loại báo cáo", "10", "9 đang bật", AlertTriangle]].map(([label, value, note, Icon]) => <MetricCard key={label as string} label={label as string} value={value as string} note={note as string} icon={Icon as typeof Users} accent="bg-emerald-50 text-emerald-700" />)}</div><div className="grid gap-5 lg:grid-cols-2"><div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center justify-between"><h3 className="font-black text-slate-900">Miền & tỉnh thành</h3><button onClick={() => notify("Đã sắp xếp lại thứ tự hiển thị.")} className="text-xs font-bold text-emerald-600 hover:text-emerald-700">Sắp xếp</button></div><div className="mt-4 space-y-2">{[["Miền Bắc", "25 tỉnh", "Đang hiển thị", "green"], ["Miền Trung", "19 tỉnh", "Đang hiển thị", "green"], ["Miền Nam", "19 tỉnh", "1 tỉnh đang ẩn", "amber"]].map(([name, count, status, tone]) => <div key={name} className="flex items-center gap-3 rounded-xl border border-slate-100 p-3"><div className="rounded-lg bg-emerald-50 p-2 text-emerald-600"><Globe2 size={15} /></div><div className="flex-1"><div className="text-xs font-bold text-slate-800">{name}</div><div className="mt-1 text-[10px] text-slate-400">{count} · {status}</div></div><Badge tone={tone === "green" ? "green" : "amber"}>Đang dùng</Badge><button onClick={() => notify(`Đã mở chỉnh sửa ${name}.`)} className="text-[11px] font-bold text-slate-400 hover:text-emerald-600">Sửa</button></div>)}</div></div><div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center justify-between"><h3 className="font-black text-slate-900">Danh mục & loại báo cáo</h3><button onClick={() => notify("Đã mở trình quản lý danh mục.")} className="text-xs font-bold text-emerald-600 hover:text-emerald-700">Quản lý</button></div><div className="mt-4 space-y-2">{[["Ẩm thực", "6 danh mục", "1.124 địa điểm"], ["Lưu trú", "5 danh mục", "328 địa điểm"], ["Điểm tham quan", "7 danh mục", "390 địa điểm"]].map(([name, categories, places]) => <div key={name} className="flex items-center gap-3 rounded-xl border border-slate-100 p-3"><div className="rounded-lg bg-emerald-50 p-2 text-emerald-600"><SlidersHorizontal size={15} /></div><div className="flex-1"><div className="text-xs font-bold text-slate-800">{name}</div><div className="mt-1 text-[10px] text-slate-400">{categories} · {places}</div></div><button onClick={() => notify(`Đã mở cảnh báo tác động cho ${name}.`)} className="text-[11px] font-bold text-slate-400 hover:text-emerald-600">Xem</button></div>)}</div></div></div></section>}
 
         {activeTab === "complaints" && <SystemReportsTab showToast={notify} />}
 
         {activeTab === "settings" && <SystemSettingsTab showToast={notify} />}
 
-        {activeTab === "audit" && <section className="space-y-5"><div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-2xl font-black text-slate-950">Nhật ký toàn hệ thống</h2><p className="mt-1 text-sm text-slate-500">Audit log bất biến: ai làm gì, giá trị cũ/mới và trạng thái thao tác.</p></div><button onClick={() => notify("Đã xuất audit log theo bộ lọc hiện tại.")} className="inline-flex items-center gap-2 rounded-xl bg-[#063f38] px-4 py-2.5 text-xs font-bold text-white"><FileClock size={15} />Xuất CSV</button></div><div className="flex flex-wrap gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><button className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-xs font-bold text-white"><Filter size={14} />Tất cả hành động</button><button className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600">Tất cả admin</button><button className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600">7 ngày qua</button><button onClick={() => notify("Bộ lọc nâng cao đã sẵn sàng.")} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600">Bộ lọc nâng cao</button></div><div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="overflow-x-auto"><table className="w-full min-w-[850px] text-left text-xs"><thead className="bg-slate-50 text-[10px] font-black uppercase tracking-wider text-slate-400"><tr><th className="px-5 py-3">Thời gian</th><th className="px-5 py-3">Người thực hiện</th><th className="px-5 py-3">Hành động</th><th className="px-5 py-3">Đối tượng</th><th className="px-5 py-3">Thay đổi / lý do</th><th className="px-5 py-3">Trạng thái</th></tr></thead><tbody className="divide-y divide-slate-100">{auditRows.map((row) => <tr key={`${row[0]}-${row[3]}`} className="hover:bg-slate-50/70">{row.map((cell, index) => <td key={cell} className={`px-5 py-4 ${index === 1 || index === 2 || index === 3 ? "font-semibold text-slate-800" : "text-slate-500"}`}>{index === 5 ? <Badge tone="green">{cell}</Badge> : cell}</td>)}</tr>)}</tbody></table></div></div></section>}
+        {activeTab === "audit" && <section className="space-y-5"><div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-2xl font-black text-slate-950">Nhật ký toàn hệ thống</h2><p className="mt-1 text-sm text-slate-500">Audit log bất biến: ai làm gì, giá trị cũ/mới và trạng thái thao tác.</p></div><button onClick={() => notify("Đã xuất audit log theo bộ lọc hiện tại.")} className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition"><FileClock size={15} />Xuất CSV</button></div><div className="flex flex-wrap gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><button className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-xs font-bold text-white"><Filter size={14} />Tất cả hành động</button><button className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600">Tất cả admin</button><button className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600">7 ngày qua</button><button onClick={() => notify("Bộ lọc nâng cao đã sẵn sàng.")} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600">Bộ lọc nâng cao</button></div><div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="overflow-x-auto"><table className="w-full min-w-[850px] text-left text-xs"><thead className="bg-slate-50 text-[10px] font-black uppercase tracking-wider text-slate-400"><tr><th className="px-5 py-3">Thời gian</th><th className="px-5 py-3">Người thực hiện</th><th className="px-5 py-3">Hành động</th><th className="px-5 py-3">Đối tượng</th><th className="px-5 py-3">Thay đổi / lý do</th><th className="px-5 py-3">Trạng thái</th></tr></thead><tbody className="divide-y divide-slate-100">{auditRows.map((row) => <tr key={`${row[0]}-${row[3]}`} className="hover:bg-slate-50/70">{row.map((cell, index) => <td key={cell} className={`px-5 py-4 ${index === 1 || index === 2 || index === 3 ? "font-semibold text-slate-800" : "text-slate-500"}`}>{index === 5 ? <Badge tone="green">{cell}</Badge> : cell}</td>)}</tr>)}</tbody></table></div></div></section>}
       </main>
       {grantAdminOpen && <GrantAdminModal onClose={() => setGrantAdminOpen(false)} onConfirm={(user, level, scopes) => {
         const newAdmin: AdminRow = { id: user.id, name: user.name, email: user.email, level, scope: scopes.join(" · ") || "Chưa gán phạm vi", status: "Đang hoạt động", tasks: 0 };

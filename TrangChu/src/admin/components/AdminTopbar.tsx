@@ -59,7 +59,7 @@ export default function AdminTopbar({
         </button>
 
         <div className="flex items-center gap-2 text-xs font-medium">
-          <span className="text-slate-400">Điều phối</span>
+          <span className="text-slate-400">Quản trị</span>
           <span className="text-slate-300">/</span>
           <span className="text-slate-900 font-bold">
             {mainTab === "dashboard" && "Dashboard Tổng Quan"}

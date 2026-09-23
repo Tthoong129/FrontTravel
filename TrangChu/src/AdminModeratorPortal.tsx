@@ -31,6 +31,9 @@ import PlacesTab from "./admin/tabs/PlacesTab";
 import ProposalsTab from "./admin/tabs/ProposalsTab";
 import ReviewsCommentsTab from "./admin/tabs/ReviewsCommentsTab";
 import ReportsTab from "./admin/tabs/ReportsTab";
+import UsersTab from "./admin/tabs/UsersTab";
+import PermissionsTab from "./admin/tabs/PermissionsTab";
+import SystemSettingsTab from "./admin/tabs/SystemSettingsTab";
 import {
   FoodsTab,
   CollectionsTab,
@@ -43,17 +46,20 @@ import {
 
 // Modals
 import AddPlaceModal from "./admin/modals/AddPlaceModal";
+import EditPlaceModal from "./admin/modals/EditPlaceModal";
 
 // Re-export types for backward compatibility
 export type { AdminMainTab, PlaceDetailTab, PlaceMediaItem, PlaceReviewItem, PlaceCommentItem };
 
 interface AdminModeratorPortalProps {
   onBackToUserView: () => void;
+  onOpenSystemAdmin?: () => void;
   showToast: (msg: string) => void;
 }
 
 export default function AdminModeratorPortal({
   onBackToUserView,
+  onOpenSystemAdmin,
   showToast,
 }: AdminModeratorPortalProps) {
   // Navigation State
@@ -194,6 +200,22 @@ export default function AdminModeratorPortal({
     img: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=400&fit=crop",
   });
 
+  // Edit Place Modal State
+  const [isEditPlaceModalOpen, setIsEditPlaceModalOpen] = useState(false);
+  const [editPlaceForm, setEditPlaceForm] = useState({
+    id: 0,
+    name: "",
+    category: "",
+    province: "",
+    location: "",
+    price: "",
+    hours: "",
+    phone: "",
+    website: "",
+    desc: "",
+    img: "",
+  });
+
   // Current selected place
   const currentPlace = placesList.find((p) => p.id === selectedPlaceId) || null;
 
@@ -295,6 +317,49 @@ export default function AdminModeratorPortal({
     addAuditLog("Thêm mới địa điểm trực tiếp", createdPlace.name, "Tạo mới bởi Admin cấp 1", "create");
     setIsAddPlaceModalOpen(false);
     showToast(`Đã thêm mới địa điểm "${createdPlace.name}".`);
+  };
+
+  const handleOpenEditPlace = (place: any) => {
+    setEditPlaceForm({
+      id: place.id,
+      name: place.name || "",
+      category: place.category || "",
+      province: place.province || "",
+      location: place.location || "",
+      price: place.price || "",
+      hours: place.hours || "",
+      phone: place.phone || "",
+      website: place.website || "",
+      desc: place.desc || "",
+      img: place.img || "",
+    });
+    setIsEditPlaceModalOpen(true);
+  };
+
+  const handleUpdatePlace = () => {
+    setPlacesList((prev) =>
+      prev.map((p) => {
+        if (p.id === editPlaceForm.id) {
+          addAuditLog("Cập nhật địa điểm", editPlaceForm.name, "Chỉnh sửa thông tin bởi Admin", "edit");
+          return {
+            ...p,
+            name: editPlaceForm.name,
+            category: editPlaceForm.category,
+            province: editPlaceForm.province,
+            location: editPlaceForm.location,
+            price: editPlaceForm.price,
+            hours: editPlaceForm.hours,
+            phone: editPlaceForm.phone,
+            website: editPlaceForm.website,
+            desc: editPlaceForm.desc,
+            img: editPlaceForm.img,
+          };
+        }
+        return p;
+      })
+    );
+    setIsEditPlaceModalOpen(false);
+    showToast(`Đã cập nhật địa điểm "${editPlaceForm.name}".`);
   };
 
   // ── GROUPED REPORTS LOGIC ──
@@ -496,7 +561,7 @@ export default function AdminModeratorPortal({
   const reportedReviews = reviewsList.filter((r) => r.reportCount > 0);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex font-sans antialiased selection:bg-slate-900 selection:text-white">
+    <div className="min-h-screen bg-[#F1F5F9] text-slate-800 flex font-sans antialiased selection:bg-blue-600 selection:text-white">
       {/* ── 1. COLLAPSIBLE MODERN SAAS SIDEBAR ── */}
       <AdminSidebar
         isSidebarOpen={isSidebarOpen}
@@ -511,6 +576,7 @@ export default function AdminModeratorPortal({
         foodsCount={foodsList.length}
         blogsCount={blogsList.length}
         auditLogsCount={auditLogs.length}
+        onOpenSystemAdmin={onOpenSystemAdmin}
         onBackToUserView={onBackToUserView}
       />
 
@@ -575,6 +641,7 @@ export default function AdminModeratorPortal({
               handleApprovePlace={handleApprovePlace}
               handleTogglePlaceStatus={handleTogglePlaceStatus}
               handleOpenModerationDrawer={handleOpenModerationDrawer}
+              handleOpenEditPlace={handleOpenEditPlace}
               showToast={showToast}
             />
           )}
@@ -633,6 +700,9 @@ export default function AdminModeratorPortal({
             />
           )}
 
+          {/* TAB 5.5: QUẢN LÝ NGƯỜI DÙNG & ĐIỂM UY TÍN (USERS MANAGEMENT) */}
+          {mainTab === "users" && <UsersTab showToast={showToast} />}
+
           {/* TAB 6: ẨM THỰC & ĐẶC SẢN */}
           {mainTab === "foods" && <FoodsTab foodsList={foodsList} />}
 
@@ -648,12 +718,18 @@ export default function AdminModeratorPortal({
           {/* TAB 10: DANH MỤC HỆ THỐNG */}
           {mainTab === "categories" && <CategoriesTab currentAdminInfo={currentAdminInfo} />}
 
-          {/* TAB 11: THÔNG BÁO & HỒ SƠ */}
+          {/* TAB 11: PHÂN QUYỀN & TÀI KHOẢN QUẢN TRỊ */}
+          {mainTab === "permissions" && <PermissionsTab showToast={showToast} />}
+
+          {/* TAB 12: CẤU HÌNH HỆ THỐNG & SLA */}
+          {mainTab === "settings" && <SystemSettingsTab showToast={showToast} />}
+
+          {/* TAB 13: THÔNG BÁO & HỒ SƠ */}
           {mainTab === "notifications_profile" && (
             <NotificationsProfileTab currentAdminInfo={currentAdminInfo} />
           )}
 
-          {/* TAB 12: NHẬT KÝ KIỂM TOÁN */}
+          {/* TAB 14: NHẬT KÝ KIỂM TOÁN */}
           {mainTab === "audit_logs" && <AuditLogsTab auditLogs={auditLogs} />}
         </main>
       </div>
@@ -691,6 +767,15 @@ export default function AdminModeratorPortal({
         form={newPlaceForm}
         setForm={setNewPlaceForm}
         onSubmit={handleCreateNewPlace}
+      />
+
+      {/* ── 5. EDIT PLACE MODAL ── */}
+      <EditPlaceModal
+        isOpen={isEditPlaceModalOpen}
+        onClose={() => setIsEditPlaceModalOpen(false)}
+        form={editPlaceForm}
+        setForm={setEditPlaceForm}
+        onSubmit={handleUpdatePlace}
       />
     </div>
   );
