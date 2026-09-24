@@ -28,12 +28,14 @@ import ModerationDrawer from "./admin/components/ModerationDrawer";
 // Modular Tabs
 import DashboardTab from "./admin/tabs/DashboardTab";
 import PlacesTab from "./admin/tabs/PlacesTab";
+import TrendingLeaderboardTab from "./admin/tabs/TrendingLeaderboardTab";
 import ProposalsTab from "./admin/tabs/ProposalsTab";
 import ReviewsCommentsTab from "./admin/tabs/ReviewsCommentsTab";
 import ReportsTab from "./admin/tabs/ReportsTab";
 import UsersTab from "./admin/tabs/UsersTab";
 import PermissionsTab from "./admin/tabs/PermissionsTab";
 import SystemSettingsTab from "./admin/tabs/SystemSettingsTab";
+import NotificationCenterTab from "./admin/tabs/NotificationCenterTab";
 import {
   FoodsTab,
   CollectionsTab,
@@ -587,6 +589,7 @@ export default function AdminModeratorPortal({
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
           mainTab={mainTab}
+          setMainTab={setMainTab}
           selectedPlaceId={selectedPlaceId}
           currentPlaceName={currentPlace?.name}
           searchText={placeSearchText}
@@ -644,6 +647,11 @@ export default function AdminModeratorPortal({
               handleOpenEditPlace={handleOpenEditPlace}
               showToast={showToast}
             />
+          )}
+
+          {/* TAB 2.5: BẢNG XẾP HẠNG ĐỊA ĐIỂM NỔI BẬT & TRENDING */}
+          {mainTab === "leaderboard" && (
+            <TrendingLeaderboardTab showToast={showToast} />
           )}
 
           {/* TAB 3: ĐỀ XUẤT ĐÓNG GÓP (PROPOSALS) */}
@@ -704,16 +712,16 @@ export default function AdminModeratorPortal({
           {mainTab === "users" && <UsersTab showToast={showToast} />}
 
           {/* TAB 6: ẨM THỰC & ĐẶC SẢN */}
-          {mainTab === "foods" && <FoodsTab foodsList={foodsList} />}
+          {mainTab === "foods" && <FoodsTab foodsList={foodsList} showToast={showToast} />}
 
           {/* TAB 7: BỘ SƯU TẬP */}
-          {mainTab === "collections" && <CollectionsTab />}
+          {mainTab === "collections" && <CollectionsTab showToast={showToast} />}
 
           {/* TAB 8: TỈNH/THÀNH TRONG VÙNG */}
-          {mainTab === "provinces" && <ProvincesTab />}
+          {mainTab === "provinces" && <ProvincesTab showToast={showToast} />}
 
           {/* TAB 9: BLOG & CẨM NANG */}
-          {mainTab === "blogs" && <BlogsTab blogsList={blogsList} />}
+          {mainTab === "blogs" && <BlogsTab blogsList={blogsList} showToast={showToast} />}
 
           {/* TAB 10: DANH MỤC HỆ THỐNG */}
           {mainTab === "categories" && <CategoriesTab currentAdminInfo={currentAdminInfo} />}
@@ -724,13 +732,17 @@ export default function AdminModeratorPortal({
           {/* TAB 12: CẤU HÌNH HỆ THỐNG & SLA */}
           {mainTab === "settings" && <SystemSettingsTab showToast={showToast} />}
 
-          {/* TAB 13: THÔNG BÁO & HỒ SƠ */}
-          {mainTab === "notifications_profile" && (
-            <NotificationsProfileTab currentAdminInfo={currentAdminInfo} />
+          {/* TAB 13: TRUNG TÂM THÔNG BÁO & CẢNH BÁO */}
+          {(mainTab === "notifications" || mainTab === "notifications_profile") && (
+            <NotificationCenterTab
+              currentAdminInfo={currentAdminInfo}
+              showToast={showToast}
+              onNavigateToTab={(tab) => setMainTab(tab as any)}
+            />
           )}
 
           {/* TAB 14: NHẬT KÝ KIỂM TOÁN */}
-          {mainTab === "audit_logs" && <AuditLogsTab auditLogs={auditLogs} />}
+          {mainTab === "audit_logs" && <AuditLogsTab auditLogs={auditLogs} showToast={showToast} />}
         </main>
       </div>
 

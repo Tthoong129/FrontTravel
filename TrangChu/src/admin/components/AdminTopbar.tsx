@@ -7,6 +7,7 @@ interface AdminTopbarProps {
   isSidebarOpen: boolean;
   setIsSidebarOpen: (v: boolean) => void;
   mainTab: AdminMainTab;
+  setMainTab?: (v: AdminMainTab) => void;
   selectedPlaceId: number | null;
   currentPlaceName?: string;
   searchText: string;
@@ -19,6 +20,7 @@ export default function AdminTopbar({
   isSidebarOpen,
   setIsSidebarOpen,
   mainTab,
+  setMainTab,
   selectedPlaceId,
   currentPlaceName,
   searchText,
@@ -64,15 +66,20 @@ export default function AdminTopbar({
           <span className="text-slate-900 font-bold">
             {mainTab === "dashboard" && "Dashboard Tổng Quan"}
             {mainTab === "places" && (selectedPlaceId ? `Chi tiết: ${currentPlaceName || ""}` : "Quản lý Địa điểm")}
+            {mainTab === "leaderboard" && "Bảng xếp hạng Nổi bật & Trending"}
             {mainTab === "proposals" && "Đề xuất đóng góp"}
             {mainTab === "reviews_comments" && "Đánh giá & Bình luận"}
             {mainTab === "reports" && "Hàng chờ vi phạm"}
+            {mainTab === "users" && "Người dùng & Uy tín"}
             {mainTab === "foods" && "Ẩm thực & Đặc sản"}
             {mainTab === "collections" && "Bộ sưu tập"}
             {mainTab === "provinces" && "Tỉnh/Thành trong vùng"}
             {mainTab === "blogs" && "Blog & Cẩm nang"}
             {mainTab === "categories" && "Danh mục hệ thống"}
-            {mainTab === "notifications_profile" && "Hồ sơ cá nhân"}
+            {mainTab === "permissions" && "Phân quyền & Tài khoản"}
+            {mainTab === "settings" && "Cấu hình hệ thống & SLA"}
+            {mainTab === "notifications" && "Trung tâm thông báo"}
+            {mainTab === "notifications_profile" && "Trung tâm thông báo & Hồ sơ"}
             {mainTab === "audit_logs" && "Nhật ký kiểm toán"}
           </span>
         </div>
@@ -88,7 +95,7 @@ export default function AdminTopbar({
             onChange={(e) => setSearchText(e.target.value)}
             className="w-full pl-9 pr-12 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-slate-300 outline-none transition-all"
           />
-          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] bg-slate-200/60 text-slate-500 px-1.5 py-0.5 rounded font-mono font-medium">⌘K</span>
+          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] bg-slate-200/60 text-slate-500 px-1.5 py-0.5 rounded font-mono font-medium">Ctrl K</span>
         </div>
 
         <div className="relative">
@@ -108,46 +115,59 @@ export default function AdminTopbar({
                   <div className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Thông báo</div>
                   <div className="mt-1 text-sm font-bold text-slate-900">{unreadCount} tin chưa đọc</div>
                 </div>
-                <button onClick={markAllRead} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1.5 text-[10px] font-bold text-slate-600 hover:border-slate-300">
+                <button onClick={markAllRead} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1.5 text-[10px] font-bold text-slate-600 hover:border-slate-300 cursor-pointer">
                   <CheckCheck size={12} /> Đọc hết
                 </button>
               </div>
 
-              <div className="max-h-[360px] overflow-y-auto">
+              <div className="max-h-[320px] overflow-y-auto divide-y divide-slate-100">
                 {notifications.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => {
                       markOneRead(item.id);
                       setIsNotificationOpen(false);
+                      if (setMainTab) setMainTab("notifications");
                       showToast(item.title + ": " + item.detail);
                     }}
-                    className={`flex w-full items-start gap-3 border-b border-slate-100 px-4 py-3 text-left transition ${item.unread ? "bg-amber-50/40" : "bg-white"}`}
+                    className={`flex w-full items-start gap-3 px-4 py-3 text-left transition cursor-pointer ${item.unread ? "bg-blue-50/40 hover:bg-blue-50/60" : "bg-white hover:bg-slate-50"}`}
                   >
-                    <div className={`mt-1 h-2.5 w-2.5 rounded-full ${item.unread ? "bg-rose-500" : "bg-slate-300"}`} />
+                    <div className={`mt-1 h-2.5 w-2.5 rounded-full shrink-0 ${item.unread ? "bg-rose-500" : "bg-slate-300"}`} />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-sm font-bold text-slate-800">{item.title}</span>
-                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-bold text-slate-500">{item.level}</span>
+                        <span className="text-xs font-bold text-slate-800 truncate">{item.title}</span>
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-bold text-slate-500 shrink-0">{item.level}</span>
                       </div>
-                      <p className="mt-1 text-xs leading-5 text-slate-500">{item.detail}</p>
-                      <div className="mt-2 flex items-center justify-between text-[10px] text-slate-400">
+                      <p className="mt-0.5 text-xs leading-4 text-slate-500 line-clamp-2">{item.detail}</p>
+                      <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-400">
                         <span>{item.time}</span>
-                        <span className="inline-flex items-center gap-1 font-semibold text-slate-500">
-                          <Sparkles size={10} /> Chi tiết
+                        <span className="inline-flex items-center gap-1 font-semibold text-blue-600">
+                          <Sparkles size={10} /> Xem chi tiết
                         </span>
                       </div>
                     </div>
                   </button>
                 ))}
               </div>
+
+              <div className="p-2.5 border-t border-slate-100 bg-slate-50 text-center">
+                <button
+                  onClick={() => {
+                    setIsNotificationOpen(false);
+                    if (setMainTab) setMainTab("notifications");
+                  }}
+                  className="w-full py-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 transition cursor-pointer"
+                >
+                  Mở Trung tâm thông báo toàn diện →
+                </button>
+              </div>
             </div>
           )}
         </div>
 
         <div className="flex items-center gap-2.5 pl-3 border-l border-slate-200">
-          <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center ring-2 ring-slate-100">
-            N
+          <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center ring-2 ring-blue-100">
+            {currentAdminInfo.adminName.charAt(0)}
           </div>
           <div className="leading-tight hidden md:block">
             <span className="font-bold text-xs text-slate-900 block">

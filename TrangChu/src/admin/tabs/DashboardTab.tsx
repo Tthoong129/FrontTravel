@@ -162,16 +162,25 @@ export default function DashboardTab({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      {/* ── 0. LIVE NOTICE & SYNC BAR ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-semibold border border-slate-200/60">
-            Khu vực phụ trách: <span className="text-blue-600 font-bold">{currentAdminInfo.region}</span>
-          </span>
+      {/* ── 1. PAGE TITLE & ACTIONS ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <span>Tổng Quan Hệ Thống</span>
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+              Admin Cấp Tỉnh
+            </span>
+          </h1>
+          <p className="text-xs text-slate-500 mt-1 flex items-center gap-2">
+            Báo cáo trực tiếp, giám sát hoạt động và xử lý đề xuất nhanh.
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-semibold border border-slate-200/60 text-[10px]">
+              Khu vực phụ trách: <span className="text-blue-600 font-bold">{currentAdminInfo.region}</span>
+            </span>
+          </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 font-semibold border border-blue-200/60 shadow-2xs">
+        <div className="flex items-center gap-2.5 shrink-0">
+          <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200/60 shadow-2xs text-xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             Live Sync • Làm mới sau: <strong>{autoRefreshCountdown}s</strong>
           </span>
@@ -180,10 +189,10 @@ export default function DashboardTab({
               setAutoRefreshCountdown(30);
               showToast("Đã đồng bộ lại dữ liệu toàn hệ thống theo thời gian thực.");
             }}
-            className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition shadow-2xs cursor-pointer"
+            className="p-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition shadow-2xs cursor-pointer"
             title="Làm mới ngay"
           >
-            <RefreshCw size={14} />
+            <RefreshCw size={16} />
           </button>
         </div>
       </div>

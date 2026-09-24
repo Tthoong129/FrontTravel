@@ -27,6 +27,8 @@ import {
   Edit3,
   Check,
   AlertTriangle,
+  Download,
+  Sparkles,
 } from "lucide-react";
 
 interface PlacesTabProps {
@@ -245,7 +247,7 @@ export default function PlacesTab({
           </div>
 
           {/* Sub-tabs Navigation */}
-          <div className="flex items-center gap-1 overflow-x-auto border-t border-slate-100 pt-3 text-xs scrollbar-none">
+          <div className="flex items-center gap-1.5 overflow-x-auto border-t border-slate-100 pt-3 text-xs scrollbar-none">
             {[
               { id: "info", label: "Thông tin tổng quan", icon: FileText },
               { id: "contact", label: "Liên hệ & Vị trí", icon: MapPin },
@@ -261,8 +263,8 @@ export default function PlacesTab({
                   onClick={() => changeDetailTab(tab.id as PlaceDetailTab)}
                   className={`px-3.5 py-2 rounded-xl font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
                     isActive
-                      ? "bg-slate-900 text-white shadow-xs"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-medium"
                   }`}
                 >
                   <Icon size={14} />
@@ -270,7 +272,7 @@ export default function PlacesTab({
                   {tab.count !== undefined && (
                     <span
                       className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                        isActive ? "bg-white/20 text-white" : "bg-slate-200/80 text-slate-700"
+                        isActive ? "bg-white text-blue-700 shadow-2xs" : "bg-slate-200/80 text-slate-700"
                       }`}
                     >
                       {tab.count}
@@ -536,8 +538,40 @@ export default function PlacesTab({
      RENDER: PLACES LIST VIEW (GRID / TABLE WITH FULL CONTROLS)
   ───────────────────────────────────────────────────────────── */
   return (
-    <div className="space-y-5 animate-in fade-in duration-150">
-      {/* 1. Quick Stats Header */}
+    <div className="space-y-6 animate-in fade-in duration-150">
+      {/* ── 1. PAGE TITLE & ACTIONS ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <span>Quản lý Địa điểm Du lịch &amp; Dịch vụ</span>
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+              {totalCount} địa điểm
+            </span>
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Tra cứu, kiểm duyệt thông tin, kiểm soát trạng thái hiển thị và tọa độ bản đồ các cơ sở dịch vụ trên toàn quốc.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2.5 shrink-0">
+          <button
+            onClick={() => showToast?.("Đang xuất danh sách địa điểm định dạng CSV...")}
+            className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
+          >
+            <Download size={14} className="text-slate-600" />
+            <span>Xuất CSV</span>
+          </button>
+          <button
+            onClick={() => setIsAddPlaceModalOpen(true)}
+            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+          >
+            <Plus size={14} />
+            <span>Thêm địa điểm</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 2. Quick Stats Header */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
           <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tổng địa điểm</div>
@@ -557,7 +591,7 @@ export default function PlacesTab({
         </div>
       </div>
 
-      {/* 2. Filter & Actions Toolbar */}
+      {/* 3. Filter & Actions Toolbar */}
       <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           {/* Search Box */}
@@ -571,15 +605,6 @@ export default function PlacesTab({
               className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 bg-slate-50/70 text-xs font-medium focus:bg-white focus:border-slate-400 outline-none transition-all"
             />
           </div>
-
-          {/* Add Place Button */}
-          <button
-            onClick={() => setIsAddPlaceModalOpen(true)}
-            className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0"
-          >
-            <Plus size={14} />
-            <span>Thêm địa điểm mới</span>
-          </button>
         </div>
 
         {/* Filters and Sorters */}

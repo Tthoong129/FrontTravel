@@ -262,35 +262,31 @@ export default function UsersTab({ showToast }: UsersTabProps) {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      {/* ── 1. HEADER & ACTIONS ── */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-4">
+      {/* ── 1. PAGE TITLE & ACTIONS ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-              <Users size={18} />
-            </div>
-            <div>
-              <h1 className="text-base font-black text-slate-900 tracking-tight">
-                Quản lý hồ sơ &amp; Điểm uy tín thành viên
-              </h1>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Giám sát 10,482 du khách, khám phá viên và đại sứ ẩm thực trên hệ sinh thái du lịch
-              </p>
-            </div>
-          </div>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <span>Quản lý Hồ sơ &amp; Điểm Uy Tín Thành Viên</span>
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+              10,482 Users
+            </span>
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Giám sát hồ sơ thành viên, thang điểm uy tín (Trust Score), xếp hạng Đại sứ du lịch và chế tài xử lý vi phạm.
+          </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 shrink-0">
           <button
             onClick={() => showToast("Đang xuất danh sách người dùng định dạng Excel...")}
-            className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
           >
             <FileSpreadsheet size={14} className="text-emerald-600" />
             <span>Xuất Excel</span>
           </button>
           <button
             onClick={() => showToast("Đã kích hoạt quét tự động tài khoản nghi vấn spam...")}
-            className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+            className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer"
           >
             <Sparkles size={14} />
             <span>AI Quét Rủi Ro</span>
@@ -298,9 +294,9 @@ export default function UsersTab({ showToast }: UsersTabProps) {
         </div>
       </div>
 
-      {/* 4 Thẻ KPI Người Dùng Rubick */}
+      {/* 4 Thẻ KPI Người Dùng */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-[0_3px_12px_rgba(0,0,0,0.03)] space-y-2">
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-slate-400 uppercase text-[10px]">Tổng Thành Viên</span>
             <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
@@ -313,7 +309,7 @@ export default function UsersTab({ showToast }: UsersTabProps) {
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-[0_3px_12px_rgba(0,0,0,0.03)] space-y-2">
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-slate-400 uppercase text-[10px]">Hoạt Động Tích Cực</span>
             <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
@@ -324,7 +320,7 @@ export default function UsersTab({ showToast }: UsersTabProps) {
           <div className="text-[11px] text-slate-500 font-medium">85% tương tác thường xuyên</div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-[0_3px_12px_rgba(0,0,0,0.03)] space-y-2">
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-slate-400 uppercase text-[10px]">Đại Sứ &amp; Cộng Tác</span>
             <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
@@ -335,7 +331,7 @@ export default function UsersTab({ showToast }: UsersTabProps) {
           <div className="text-[11px] text-amber-700 font-bold">Uy tín &gt; 90 điểm</div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-[0_3px_12px_rgba(0,0,0,0.03)] space-y-2">
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-slate-400 uppercase text-[10px]">Cảnh Báo &amp; Đã Khóa</span>
             <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center font-bold">

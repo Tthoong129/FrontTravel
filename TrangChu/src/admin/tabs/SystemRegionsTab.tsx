@@ -425,33 +425,29 @@ export default function SystemRegionsTab({ onNotify }: SystemRegionsTabProps) {
   const totalPlaces = provincesList.reduce((acc, p) => acc + p.placesCount, 0);
 
   return (
-    <div className="space-y-5 animate-in fade-in duration-200">
-      {/* 1. Header & Tabs Switcher */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-4">
+    <div className="space-y-6 animate-in fade-in duration-200">
+      {/* 1. Page Title & Tabs Switcher */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-              <Globe2 size={18} />
-            </div>
-            <div>
-              <h1 className="text-base font-black text-slate-900 tracking-tight">
-                Vùng miền &amp; Tỉnh thành số hóa
-              </h1>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Quản lý phân cấp địa lý, kích hoạt địa bàn và mức độ số hóa dữ liệu du lịch toàn quốc
-              </p>
-            </div>
-          </div>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <span>Vùng Miền &amp; Tỉnh Thành Số Hóa</span>
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+              63 Tỉnh/Thành
+            </span>
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Quản lý phân cấp địa lý, kích hoạt địa bàn và mức độ số hóa dữ liệu du lịch toàn quốc.
+          </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-bold">
+        <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex items-center bg-slate-200/70 p-1 rounded-xl text-xs font-bold">
             <button
               onClick={() => setSubTab("provinces")}
               className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
                 subTab === "provinces"
                   ? "bg-white text-slate-900 shadow-xs"
-                  : "text-slate-500 hover:text-slate-900"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Tỉnh / Thành ({totalProvinces})
@@ -461,7 +457,7 @@ export default function SystemRegionsTab({ onNotify }: SystemRegionsTabProps) {
               className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
                 subTab === "regions"
                   ? "bg-white text-slate-900 shadow-xs"
-                  : "text-slate-500 hover:text-slate-900"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Vùng miền ({regionsList.length})
@@ -470,33 +466,21 @@ export default function SystemRegionsTab({ onNotify }: SystemRegionsTabProps) {
 
           <button
             onClick={handleExportCSV}
-            className="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
-            title="Xuất tệp CSV"
+            className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs flex items-center gap-1.5 transition cursor-pointer"
           >
-            <Download size={14} />
-            <span className="hidden sm:inline">Xuất CSV</span>
+            <Download size={14} className="text-emerald-600" />
+            <span>Xuất CSV</span>
           </button>
-
           <button
-            onClick={() => {
-              setProvinceForm({
-                name: "",
-                region: "Miền Trung",
-                code: "",
-                description: "",
-                isFeatured: true,
-                status: "active",
-                coverImg: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=600&h=400&fit=crop",
-              });
-              setIsAddModalOpen(true);
-            }}
-            className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0"
+            onClick={() => setIsAddModalOpen(true)}
+            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition cursor-pointer"
           >
             <Plus size={14} />
-            <span>Thêm tỉnh / thành</span>
+            <span>Thêm Tỉnh/Thành</span>
           </button>
         </div>
       </div>
+
 
       {/* 2. Stats Overview Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

@@ -1,5 +1,6 @@
 import { useState, useRef, type RefObject } from "react";
 import ExplorePage from "./ExplorePage";
+import LeaderboardPage from "./LeaderboardPage";
 import PlaceDetailPage from "./PlaceDetailPage";
 import MapPage from "./MapPage";
 import FoodPage from "./FoodPage";
@@ -55,6 +56,9 @@ import {
   Users,
   MessageCircle,
   Flag,
+  Trophy,
+  Flame,
+  Crown,
 } from "lucide-react";
 
 const HERO_IMG =
@@ -109,6 +113,7 @@ function ImgWithFallback({
 const navLinks = [
   "Trang chủ",
   "Khám phá",
+  "Bảng xếp hạng",
   "Bản đồ",
   "Ẩm thực",
   "Hành trình",
@@ -556,13 +561,18 @@ export default function App() {
                 setSelectedPlace(null);
                 setActiveNav(link);
               }}
-              className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+              className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 ${
                 activeNav === link
                   ? "text-emerald-900 bg-emerald-50 font-bold"
                   : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
               }`}
             >
-              {link}
+              <span>{link}</span>
+              {link === "Bảng xếp hạng" && (
+                <span className="px-1.5 py-0.2 rounded-full bg-amber-500 text-white text-[9px] font-black uppercase tracking-wider animate-pulse">
+                  HOT
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -607,10 +617,10 @@ export default function App() {
               setActiveNav("System Admin");
               showToast("Mở Trung tâm điều hành System Admin...");
             }}
-            className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 shadow-2xs transition-all cursor-pointer"
+            className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-blue-900 bg-sky-50 hover:bg-sky-100 border border-sky-200 shadow-2xs transition-all cursor-pointer"
             title="Mở giao diện System Admin"
           >
-            <Shield size={14} className="text-emerald-700" />
+            <Shield size={14} className="text-blue-700" />
             <span>System Admin</span>
           </button>
 
@@ -1037,6 +1047,24 @@ export default function App() {
     );
   }
 
+  // ── ROUTE 4.5: BẢNG XẾP HẠNG & XU HƯỚNG (LEADERBOARD PAGE) ──
+  if (activeNav === "Bảng xếp hạng" || activeNav === "Xếp hạng") {
+    return (
+      <div className="min-h-full font-['Inter',system-ui,sans-serif]">
+        {renderAppHeader()}
+        <LeaderboardPage
+          onSelectPlace={handleSelectPlace}
+          onReportPlace={handleReportPlace}
+          showToast={showToast}
+        />
+
+        {renderGlobalModals()}
+
+        {renderFloatingChat()}
+      </div>
+    );
+  }
+
   // ── ROUTE 5: ẨM THỰC (FOOD PAGE) ──
   if (activeNav === "Ẩm thực") {
     return (
@@ -1390,6 +1418,144 @@ export default function App() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── DIVIDER ── */}
+      <div className="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+
+      {/* ── KHỐI 2.5: BẢNG XẾP HẠNG & XU HƯỚNG DU LỊCH 2026 (LEADERBOARD SPOTLIGHT) ── */}
+      <section className="py-20 bg-gradient-to-b from-stone-50 via-amber-50/20 to-white relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-900 font-bold text-xs uppercase tracking-wider mb-3">
+                <Trophy size={14} className="text-amber-600" />
+                <span>Travelers' Choice &amp; Trending 2026</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold text-slate-900" style={{ fontFamily: "'Playfair Display', serif" }}>
+                Bảng Xếp Hạng <span className="text-amber-600">Thịnh Hành Nhất</span>
+              </h2>
+              <p className="text-slate-500 text-sm mt-2 max-w-xl">
+                Top những điểm đến và quán ăn được du khách bình chọn, check-in và đánh giá cao nhất trong tuần qua.
+              </p>
+            </div>
+
+            <button
+              onClick={() => {
+                setSelectedPlace(null);
+                setActiveNav("Bảng xếp hạng");
+              }}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-md transition-all hover:gap-3 cursor-pointer self-start md:self-auto"
+            >
+              <span>Xem toàn bộ Bảng xếp hạng</span>
+              <ArrowRight size={14} />
+            </button>
+          </div>
+
+          {/* Top 3 Teaser Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+            {/* Top 2 */}
+            <div
+              onClick={() => {
+                setSelectedPlace(null);
+                setActiveNav("Bảng xếp hạng");
+              }}
+              className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-4 space-y-3 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group order-2 md:order-1"
+            >
+              <div className="relative h-44 rounded-2xl overflow-hidden bg-slate-100">
+                <img
+                  src="https://images.unsplash.com/photo-1763703686284-b63557b08a86?w=600&h=400&fit=crop"
+                  alt="Bánh Mì Phượng"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <span className="absolute top-3 left-3 w-8 h-8 rounded-xl bg-slate-200 text-slate-800 font-black text-xs flex items-center justify-center shadow-md border border-white">
+                  🥈 #2
+                </span>
+                <span className="absolute bottom-3 left-3 px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-xs text-white text-[10px] font-bold">
+                  Hội An · Tiệm bánh
+                </span>
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-slate-900 group-hover:text-blue-600 transition">Bánh Mì Phượng</h3>
+                <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 text-xs">
+                  <span className="flex items-center gap-1 font-bold text-slate-800">
+                    <Star size={12} className="text-amber-500 fill-amber-500" /> 4.9 (5.420)
+                  </span>
+                  <span className="text-emerald-600 font-bold">+42.6% tuần này</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Top 1 Gold Champion */}
+            <div
+              onClick={() => {
+                setSelectedPlace(null);
+                setActiveNav("Bảng xếp hạng");
+              }}
+              className="bg-white rounded-3xl border-2 border-amber-400 shadow-xl overflow-hidden p-5 space-y-4 cursor-pointer hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group order-1 md:order-2 md:-translate-y-3 relative"
+            >
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3.5 py-0.5 rounded-full bg-amber-500 text-white font-black text-[10px] uppercase tracking-wider shadow-md flex items-center gap-1">
+                <Crown size={12} className="fill-white" />
+                <span>Quán quân tuần</span>
+              </div>
+              <div className="relative h-56 rounded-2xl overflow-hidden bg-slate-100 mt-1">
+                <img
+                  src="https://images.unsplash.com/photo-1527997921830-de1cf1f9b430?w=600&h=400&fit=crop"
+                  alt="Phở Thìn Bờ Hồ"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <span className="absolute top-3.5 left-3.5 w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-300 to-amber-500 text-amber-950 font-black text-sm flex items-center justify-center shadow-lg border-2 border-white">
+                  🥇 #1
+                </span>
+                <span className="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-amber-500 text-white text-xs font-bold shadow-sm">
+                  Hà Nội · Top 1 Phở Bò
+                </span>
+              </div>
+              <div>
+                <h3 className="font-bold text-lg text-slate-900 group-hover:text-amber-600 transition">Phở Thìn Bờ Hồ</h3>
+                <p className="text-xs text-slate-500 line-clamp-1 mt-1">Gia truyền hơn 50 năm với nước dùng ngọt trong thanh tao bên Hồ Gươm</p>
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-amber-100 text-xs">
+                  <span className="flex items-center gap-1 font-black text-amber-900">
+                    <Star size={14} className="text-amber-500 fill-amber-500" /> 4.9 (2.341 đánh giá)
+                  </span>
+                  <span className="text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">+38.2% lượt xem</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Top 3 */}
+            <div
+              onClick={() => {
+                setSelectedPlace(null);
+                setActiveNav("Bảng xếp hạng");
+              }}
+              className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-4 space-y-3 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group order-3 md:order-3"
+            >
+              <div className="relative h-44 rounded-2xl overflow-hidden bg-slate-100">
+                <img
+                  src="https://images.unsplash.com/photo-1718942900279-4711345169d3?w=600&h=400&fit=crop"
+                  alt="Cơm Tấm Thuận Kiều"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <span className="absolute top-3 left-3 w-8 h-8 rounded-xl bg-amber-800 text-white font-black text-xs flex items-center justify-center shadow-md border border-white">
+                  🥉 #3
+                </span>
+                <span className="absolute bottom-3 left-3 px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-xs text-white text-[10px] font-bold">
+                  TP. Hồ Chí Minh · Cơm tấm
+                </span>
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-slate-900 group-hover:text-blue-600 transition">Cơm Tấm Thuận Kiều</h3>
+                <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 text-xs">
+                  <span className="flex items-center gap-1 font-bold text-slate-800">
+                    <Star size={12} className="text-amber-500 fill-amber-500" /> 4.8 (1.876)
+                  </span>
+                  <span className="text-emerald-600 font-bold">+29.4% tuần này</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

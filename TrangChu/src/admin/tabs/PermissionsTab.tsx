@@ -350,40 +350,38 @@ export default function PermissionsTab({ showToast }: PermissionsTabProps) {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-150 text-slate-800">
-      {/* Top Header Card */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-4">
+      {/* 1. Page Title & Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-[#063f38]/10 text-[#063f38] flex items-center justify-center font-bold">
-              <ShieldCheck size={16} />
-            </div>
-            <h2 className="font-bold text-base text-slate-900 tracking-tight">
-              Phân quyền &amp; Quản trị viên (Admin cấp 1 / System Admin)
-            </h2>
-          </div>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <span>Phân Quyền &amp; Quản Trị Viên</span>
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+              RBAC Security
+            </span>
+          </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Điều phối vai trò, thiết lập phạm vi quản lý (vùng miền, tỉnh thành, danh mục) và phân quyền chi tiết cho Admin cấp 1.
+            Điều phối vai trò, thiết lập phạm vi phụ trách (Scope vùng/danh mục) và phân quyền chi tiết cho Admin cấp 1.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 shrink-0">
           {/* Sub-tab navigation */}
-          <div className="flex items-center gap-1 p-1 bg-slate-100/80 rounded-xl">
+          <div className="flex items-center gap-1 p-1 bg-slate-200/70 rounded-xl">
             <button
               onClick={() => setSubTab("admins")}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 subTab === "admins"
-                  ? "bg-white text-slate-900 shadow-xs"
+                  ? "bg-white text-slate-900 shadow-xs font-bold"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Danh sách Admin ({adminsList.length})
+              Admin ({adminsList.length})
             </button>
             <button
               onClick={() => setSubTab("matrix")}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 subTab === "matrix"
-                  ? "bg-white text-slate-900 shadow-xs"
+                  ? "bg-white text-slate-900 shadow-xs font-bold"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -393,20 +391,20 @@ export default function PermissionsTab({ showToast }: PermissionsTabProps) {
               onClick={() => setSubTab("roles")}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 subTab === "roles"
-                  ? "bg-white text-slate-900 shadow-xs"
+                  ? "bg-white text-slate-900 shadow-xs font-bold"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Vai trò Roles ({rolesList.length})
+              Vai trò ({rolesList.length})
             </button>
           </div>
 
           <button
             onClick={() => setIsGrantModalOpen(true)}
-            className="px-4 py-2 rounded-xl bg-[#063f38] hover:bg-[#084f47] text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition cursor-pointer"
           >
             <Plus size={14} />
-            <span>Cấp quyền Admin mới</span>
+            <span>Phân quyền Admin</span>
           </button>
         </div>
       </div>

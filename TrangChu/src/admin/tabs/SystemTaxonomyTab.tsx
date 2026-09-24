@@ -496,33 +496,29 @@ export default function SystemTaxonomyTab({ onNotify }: SystemTaxonomyTabProps) 
   const totalPlaces = categories.reduce((acc, c) => acc + c.placesCount, 0);
 
   return (
-    <div className="space-y-5 animate-in fade-in duration-200">
-      {/* 1. Header & Switcher */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-4">
+    <div className="space-y-6 animate-in fade-in duration-200">
+      {/* 1. Page Title & Switcher */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
-              <SlidersHorizontal size={18} />
-            </div>
-            <div>
-              <h1 className="text-base font-black text-slate-900 tracking-tight">
-                Phân loại địa điểm &amp; Danh mục hệ thống
-              </h1>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Toàn quyền thêm, sửa, đổi tên và quản lý cả <strong>Loại địa điểm (PlaceTypes)</strong> lẫn <strong>Danh mục chi tiết (Categories)</strong>
-              </p>
-            </div>
-          </div>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <span>Phân Loại Địa Điểm &amp; Danh Mục</span>
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+              Taxonomy Hub
+            </span>
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Toàn quyền quản trị phân cấp Loại địa điểm (PlaceTypes) và Danh mục chi tiết (Categories).
+          </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-bold">
+        <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex items-center bg-slate-200/70 p-1 rounded-xl text-xs font-bold">
             <button
               onClick={() => setSubTab("categories")}
               className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
                 subTab === "categories"
                   ? "bg-white text-slate-900 shadow-xs"
-                  : "text-slate-500 hover:text-slate-900"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Danh mục ({totalCategories})
@@ -532,7 +528,7 @@ export default function SystemTaxonomyTab({ onNotify }: SystemTaxonomyTabProps) 
               className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
                 subTab === "types"
                   ? "bg-white text-slate-900 shadow-xs"
-                  : "text-slate-500 hover:text-slate-900"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Loại địa điểm ({placeTypes.length})
@@ -541,19 +537,18 @@ export default function SystemTaxonomyTab({ onNotify }: SystemTaxonomyTabProps) 
 
           <button
             onClick={handleExportCSV}
-            className="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
-            title="Xuất CSV"
+            className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs flex items-center gap-1.5 transition cursor-pointer"
           >
-            <Download size={14} />
-            <span className="hidden sm:inline">Xuất CSV</span>
+            <Download size={14} className="text-emerald-600" />
+            <span>Xuất CSV</span>
           </button>
 
           <button
             onClick={subTab === "categories" ? handleOpenAddCategory : handleOpenAddType}
-            className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0"
+            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition cursor-pointer"
           >
             <Plus size={14} />
-            <span>{subTab === "categories" ? "Thêm danh mục mới" : "Thêm loại địa điểm"}</span>
+            <span>{subTab === "categories" ? "Thêm danh mục" : "Thêm loại địa điểm"}</span>
           </button>
         </div>
       </div>

@@ -154,33 +154,31 @@ export default function SystemReportsTab({ showToast }: SystemReportsTabProps) {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-150 text-slate-800">
-      {/* ── HEADER CARD ── */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-4">
+      {/* ── 1. PAGE TITLE & ACTIONS ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-rose-50 text-rose-700 flex items-center justify-center font-bold">
-              <ShieldAlert size={16} />
-            </div>
-            <h2 className="font-bold text-base text-slate-900 tracking-tight">
-              Báo cáo vi phạm &amp; Khiếu nại (Reports &amp; Moderation)
-            </h2>
-          </div>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <span>Báo cáo Vi phạm &amp; Khiếu nại</span>
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+              {pendingAll.length} chờ xử lý
+            </span>
+          </h1>
           <p className="text-xs text-slate-500 mt-1">
             Tổng hợp và điều phối xử lý vi phạm địa điểm, đánh giá, bình luận, bài viết toàn hệ thống.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 shrink-0">
           <button
             onClick={() => setShowReportTypes(!showReportTypes)}
-            className="px-3.5 py-2 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-slate-700 text-xs font-semibold shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+            className="px-3.5 py-2 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-slate-700 text-xs font-semibold shadow-2xs flex items-center gap-1.5 transition cursor-pointer"
           >
             <BarChart3 size={14} />
             <span>Loại vi phạm ({Object.keys(DB_STANDARD_REPORT_TYPES).length})</span>
           </button>
           <button
             onClick={() => showToast("Đã xuất báo cáo vi phạm dạng CSV.")}
-            className="px-4 py-2 rounded-xl bg-[#063f38] hover:bg-[#084f47] text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition cursor-pointer"
           >
             <FileText size={14} />
             <span>Xuất CSV</span>
@@ -309,7 +307,7 @@ export default function SystemReportsTab({ showToast }: SystemReportsTabProps) {
           onClick={() => setShowFilters(!showFilters)}
           className={`px-3.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
             showFilters
-              ? "border-[#063f38] bg-[#063f38]/5 text-[#063f38]"
+              ? "border-blue-600 bg-blue-50 text-blue-700 shadow-2xs font-bold"
               : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
           }`}
         >
@@ -416,7 +414,7 @@ export default function SystemReportsTab({ showToast }: SystemReportsTabProps) {
                   type="checkbox"
                   checked={selectedIds.length === pageReports.length && pageReports.length > 0}
                   onChange={toggleSelectAll}
-                  className="rounded text-[#063f38]"
+                  className="rounded text-blue-600 focus:ring-blue-500"
                 />
               </th>
               <th className="py-3.5 px-4">Mã Báo cáo</th>
@@ -448,7 +446,7 @@ export default function SystemReportsTab({ showToast }: SystemReportsTabProps) {
                         type="checkbox"
                         checked={selectedIds.includes(r.id)}
                         onChange={() => toggleSelect(r.id)}
-                        className="rounded text-[#063f38]"
+                        className="rounded text-blue-600 focus:ring-blue-500"
                       />
                     </td>
                     <td className="py-3.5 px-4 font-mono font-bold text-slate-700">
@@ -541,60 +539,209 @@ export default function SystemReportsTab({ showToast }: SystemReportsTabProps) {
         )}
       </div>
 
-      {/* ── MODAL XỬ LÝ REPORT ── */}
+      {/* ── MODAL XỬ LÝ REPORT CHUYÊN NGHIỆP & RÕ RÀNG ── */}
       {drawerReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
-          <div className="w-full max-w-xl bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 my-8">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-              <div>
-                <h3 className="font-bold text-base text-slate-900">
-                  Xử lý vi phạm: {drawerReport.codeId || `#${drawerReport.id}`}
-                </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Báo cáo gửi bởi {drawerReport.reporterName} ({drawerReport.createdAt})
-                </p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 sm:p-6 overflow-y-auto">
+          <div className="w-full max-w-4xl bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="p-4 px-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/70 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center border border-rose-200/60">
+                  <ShieldAlert size={17} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 text-[11px] text-slate-400">
+                    <span className="font-mono font-bold text-slate-700">{drawerReport.codeId || `#${drawerReport.id}`}</span>
+                    <span>•</span>
+                    <span>{drawerReport.createdAt}</span>
+                    <span>•</span>
+                    <Badge tone={drawerReport.priority === "urgent" ? "red" : drawerReport.priority === "high" ? "orange" : "blue"}>
+                      {drawerReport.priority === "urgent" ? "Khẩn cấp" : drawerReport.priority === "high" ? "Ưu tiên cao" : "Bình thường"}
+                    </Badge>
+                  </div>
+                  <h3 className="font-bold text-base text-slate-900 mt-0.5">
+                    Hồ sơ xử lý phản ánh vi phạm
+                  </h3>
+                </div>
               </div>
-              <button onClick={() => setDrawerReport(null)} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100">
+              <button
+                onClick={() => setDrawerReport(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+              >
                 <X size={18} />
               </button>
             </div>
 
-            <div className="p-6 space-y-4 text-xs">
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                <div className="font-bold text-slate-800 text-sm">{drawerReport.targetTitle}</div>
-                <div className="flex items-center gap-2 text-[11px] text-slate-500">
-                  <Badge tone="blue">{TARGET_TYPE_LABELS[drawerReport.targetType]}</Badge>
-                  <span>Khu vực: {drawerReport.province}</span>
+            {/* Modal Body: 2 Columns */}
+            <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-y-auto divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+              {/* CỘT TRÁI (7/12): Chi tiết đối tượng & Bằng chứng báo cáo */}
+              <div className="lg:col-span-7 p-6 space-y-5 bg-white text-xs">
+                {/* 1. Đối tượng bị báo cáo */}
+                <div className="space-y-2">
+                  <span className="font-bold text-[11px] text-slate-400 uppercase tracking-wider block">
+                    1. Đối tượng bị phản ánh
+                  </span>
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                    <div className="flex items-start gap-3">
+                      {drawerReport.targetImage ? (
+                        <img
+                          src={drawerReport.targetImage}
+                          alt=""
+                          className="w-16 h-16 rounded-xl object-cover ring-1 ring-slate-200 shrink-0"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-xl bg-slate-200 flex items-center justify-center text-slate-500 shrink-0">
+                          <Building2 size={24} />
+                        </div>
+                      )}
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Badge tone="blue">{TARGET_TYPE_LABELS[drawerReport.targetType] || drawerReport.targetType}</Badge>
+                          <span className="text-slate-500 font-medium">{drawerReport.province}</span>
+                        </div>
+                        <h4 className="font-bold text-slate-900 text-sm">{drawerReport.targetTitle}</h4>
+                        {drawerReport.targetSubtitle && (
+                          <p className="text-slate-500 text-[11px]">{drawerReport.targetSubtitle}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Nội dung chi tiết nếu là review / comment */}
+                    {drawerReport.targetContent && (
+                      <div className="p-3 bg-white rounded-lg border border-slate-200 text-slate-800 space-y-1">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase">Nội dung hiển thị gốc:</span>
+                        <p className="italic leading-relaxed font-medium">"{drawerReport.targetContent}"</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                {drawerReport.targetContent && (
-                  <p className="text-slate-700 bg-white p-3 rounded-lg border border-slate-200 italic mt-2">
-                    "{drawerReport.targetContent}"
-                  </p>
-                )}
+
+                {/* 2. Chi tiết phản ánh & Bằng chứng */}
+                <div className="space-y-2">
+                  <span className="font-bold text-[11px] text-slate-400 uppercase tracking-wider block">
+                    2. Nội dung người dùng phản ánh &amp; Chứng cứ
+                  </span>
+                  <div className="p-4 rounded-xl bg-rose-50/40 border border-rose-200/80 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={drawerReport.reporterAvatar}
+                          alt=""
+                          className="w-7 h-7 rounded-full object-cover ring-1 ring-slate-200"
+                        />
+                        <div>
+                          <strong className="text-slate-900 font-bold block leading-tight">{drawerReport.reporterName}</strong>
+                          <span className="text-[10px] text-slate-500">Tín nhiệm: {drawerReport.reporterReputation}đ</span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        Độ chính xác: {drawerReport.reporterAccuracyRate}%
+                      </span>
+                    </div>
+
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-rose-700 uppercase">Hành vi vi phạm:</span>
+                      <div className="font-bold text-slate-900 text-xs">
+                        {drawerReport.reportReasonCategory || drawerReport.reportTypeName}
+                      </div>
+                      <p className="text-slate-700 bg-white p-3 rounded-lg border border-rose-200 text-xs leading-relaxed">
+                        "{drawerReport.reportNote || drawerReport.reasonDescription || "Người dùng không ghi chú thêm."}"
+                      </p>
+                    </div>
+
+                    {drawerReport.evidenceImg && (
+                      <div className="space-y-1 pt-1">
+                        <span className="text-[10px] text-slate-500 font-bold uppercase">Ảnh chụp bằng chứng đính kèm:</span>
+                        <img
+                          src={drawerReport.evidenceImg}
+                          alt="Bằng chứng"
+                          className="w-full h-40 rounded-lg object-cover border border-slate-200"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <span className="font-bold text-slate-800 block mb-1">Lý do người dùng báo cáo:</span>
-                <p className="text-slate-700 bg-rose-50/60 p-3 rounded-xl border border-rose-200/80">
-                  <strong>{drawerReport.reportReasonCategory || drawerReport.reportTypeName}:</strong> {drawerReport.reportNote || "Không có ghi chú thêm."}
-                </p>
-              </div>
+              {/* CỘT PHẢI (5/12): Quyết định & Hành động thi hành */}
+              <div className="lg:col-span-5 p-6 space-y-4 bg-slate-50/60 text-xs flex flex-col justify-between">
+                <div className="space-y-4">
+                  <div className="border-b border-slate-200 pb-2">
+                    <h4 className="font-bold text-xs text-slate-900 uppercase tracking-wider">
+                      3. Quyết định kiểm duyệt
+                    </h4>
+                    <p className="text-[11px] text-slate-400 mt-0.5">Lựa chọn chế tài xử lý hoặc bác bỏ phản ánh</p>
+                  </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <button
-                  onClick={() => handleResolve("Ẩn nội dung vi phạm")}
-                  className="py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs transition cursor-pointer flex items-center justify-center gap-1.5"
-                >
-                  <XCircle size={14} />
-                  <span>Ẩn &amp; Khóa nội dung</span>
-                </button>
-                <button
-                  onClick={() => handleResolve("Bác bỏ báo cáo")}
-                  className="py-2.5 px-3 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition cursor-pointer flex items-center justify-center gap-1.5"
-                >
-                  <CheckCircle2 size={14} />
-                  <span>Bác bỏ (Nội dung hợp lệ)</span>
-                </button>
+                  {/* Hành động khả dụng */}
+                  <div className="space-y-2">
+                    <label className="font-bold text-slate-700 block">Hành động áp dụng:</label>
+                    <div className="space-y-2">
+                      <label className="flex items-start gap-2 p-2.5 rounded-xl border border-slate-200 bg-white cursor-pointer hover:border-rose-300">
+                        <input type="radio" name="actionDecision" defaultChecked className="mt-0.5 text-rose-600" />
+                        <div>
+                          <strong className="block font-bold text-slate-900">Ẩn &amp; Khóa nội dung vi phạm</strong>
+                          <span className="text-[10px] text-slate-500">Tạm ẩn khỏi trang khách và ghi nhận vi phạm tác giả</span>
+                        </div>
+                      </label>
+
+                      <label className="flex items-start gap-2 p-2.5 rounded-xl border border-slate-200 bg-white cursor-pointer hover:border-amber-300">
+                        <input type="radio" name="actionDecision" className="mt-0.5 text-amber-600" />
+                        <div>
+                          <strong className="block font-bold text-slate-900">Yêu cầu hiệu chỉnh thông tin</strong>
+                          <span className="text-[10px] text-slate-500">Gửi thông báo yêu cầu chủ cơ sở cập nhật lại</span>
+                        </div>
+                      </label>
+
+                      <label className="flex items-start gap-2 p-2.5 rounded-xl border border-slate-200 bg-white cursor-pointer hover:border-slate-300">
+                        <input type="radio" name="actionDecision" className="mt-0.5 text-slate-600" />
+                        <div>
+                          <strong className="block font-bold text-slate-900">Bác bỏ báo cáo (Không vi phạm)</strong>
+                          <span className="text-[10px] text-slate-500">Nội dung hợp lệ hoặc báo cáo quấy rối/không đúng sự thật</span>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Ghi chú xử lý */}
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 block">Ghi chú xử lý (Lưu vào Audit Trail):</label>
+                    <textarea
+                      rows={3}
+                      defaultValue="Đã xác minh nội dung vi phạm tiêu chuẩn cộng đồng. Tiến hành ẩn và gửi thông báo kết quả."
+                      className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs outline-none focus:border-emerald-600"
+                    />
+                  </div>
+
+                  {/* Tùy chọn tự động */}
+                  <div className="space-y-1.5 pt-1">
+                    <label className="flex items-center gap-2 text-[11px] text-slate-600 cursor-pointer font-medium">
+                      <input type="checkbox" defaultChecked className="rounded text-emerald-600" />
+                      <span>Gửi thông báo kết quả xử lý cho {drawerReport.reporterName}</span>
+                    </label>
+                    <label className="flex items-center gap-2 text-[11px] text-slate-600 cursor-pointer font-medium">
+                      <input type="checkbox" defaultChecked className="rounded text-emerald-600" />
+                      <span>Tự động đóng các báo cáo trùng lặp về cùng đối tượng này</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Footer Buttons */}
+                <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-200">
+                  <button
+                    onClick={() => setDrawerReport(null)}
+                    className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 font-bold hover:bg-slate-50"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    onClick={() => handleResolve("Ẩn và xử lý vi phạm")}
+                    className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold shadow-xs flex items-center gap-1.5"
+                  >
+                    <Check size={14} />
+                    <span>Xác nhận thi hành</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>

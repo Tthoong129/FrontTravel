@@ -8,10 +8,10 @@ import {
   ReportTypeCode,
 } from "../adminData";
 
-// 11 TABS THEO ĐÚNG ĐẶC TẢ HỆ THỐNG
 export type AdminMainTab =
   | "dashboard"             // 1. Tổng quan (Dashboard)
   | "places"                // 2. Địa điểm (Places, PlaceMedia)
+  | "leaderboard"           // 2.5 Bảng xếp hạng địa điểm nổi bật & Trending
   | "proposals"             // 3. Đề xuất đóng góp (Proposals)
   | "reviews_comments"      // 4. Đánh giá & Bình luận (Reviews, Comments)
   | "reports"               // 5. Báo cáo vi phạm (PlaceReports, ReviewReports, CommentReports, BlogReports)
@@ -23,7 +23,8 @@ export type AdminMainTab =
   | "categories"            // 11. Danh mục (chỉ xem: PlaceTypes, Categories)
   | "permissions"           // 12. Phân quyền & Quản trị viên (Roles, Scope Assignments)
   | "settings"              // 13. Cấu hình hệ thống & SLA (System Settings)
-  | "notifications_profile" // 14. Thông báo & Hồ sơ cá nhân (Notifications, UserProfiles)
+  | "notifications"         // 14. Trung tâm thông báo (Notification Center)
+  | "notifications_profile" // 14.5 Thông báo & Hồ sơ cá nhân (Legacy / Combined)
   | "audit_logs";           // 15. Nhật ký kiểm toán (Audit Logs)
 
 // Sub-tabs inside PLACE DETAIL FORM & HUB
